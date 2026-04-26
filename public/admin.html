@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mleczek Bus - Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        :root {
+            --admin-bg: #f3f4f6;
+            --admin-surface: #ffffff;
+            --admin-border: #e5e7eb;
+            --admin-primary: #0f172a;
+            --admin-accent: #eab308;
+            --admin-text: #1f2937;
+            --admin-text-light: #6b7280;
+            --radius-box: 0;
+            --radius-btn: 0;
+            --shadow-soft: none;
+            --shadow-hover: none;
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            font-family: 'Roboto', sans-serif;
+            color: var(--admin-text);
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-header {
+            background: var(--admin-primary);
+            color: white;
+            padding: 20px 0;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .admin-header-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .admin-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: var(--admin-surface);
+            padding: 40px;
+            border-radius: var(--radius-box);
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--admin-border);
+        }
+
+        h2,
+        h3 {
+            color: var(--admin-primary);
+            margin-top: 0;
+            font-family: 'Roboto Condensed', sans-serif;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--admin-text);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--admin-border);
+            border-radius: var(--radius-btn);
+            font-family: inherit;
+            font-size: 1rem;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--admin-accent);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
+        }
+
+        /* Modern Tabs */
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 30px;
+            background: #f1f5f9;
+            padding: 6px;
+            border-radius: var(--radius-box);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-btn);
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--admin-text-light);
+            transition: all 0.2s ease;
+            flex: 1;
+            text-align: center;
+        }
+
+        .tab-btn:hover {
+            background: #e2e8f0;
+            color: var(--admin-text);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--admin-primary);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-primary {
+            background: var(--admin-primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-btn);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #1e293b;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-btn);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .news-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--radius-btn);
+            margin-bottom: 10px;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        .news-list-item:hover {
+            background: white;
+            border-color: #cbd5e1;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: var(--radius-btn);
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .alert.success {
+            background: #dcfce7;
+            color: #166534;
+            display: block;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+            border: 1px solid #fecaca;
+        }
+
+        .login-screen-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            color: #fff;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .login-logo h1 {
+            color: #fff;
+            font-size: 2.2rem;
+            margin: 0 0 5px 0;
+            font-family: 'Roboto Condensed', sans-serif;
+            letter-spacing: 1px;
+        }
+        
+        .login-logo h1 span {
+            color: var(--admin-accent);
+        }
+
+        .login-logo p {
+            color: #94a3b8;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .login-card .form-group input {
+            background: rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #fff !important;
+            border-radius: 12px;
+            padding: 14px 20px;
+            transition: all 0.3s;
+        }
+
+        .login-card .form-group input::placeholder {
+            color: #64748b;
+        }
+
+        .login-card .form-group input:focus {
+            background: rgba(0, 0, 0, 0.4) !important;
+            border-color: var(--admin-accent) !important;
+            box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.1) !important;
+        }
+
+        .login-btn {
+            background: var(--admin-accent);
+            color: #000;
+            font-weight: 700;
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            background: #facc15;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(234, 179, 8, 0.3);
+        }
+
+        #admin-panel,
+        #admin-header-main {
+            display: none;
+        }
+
+        .ql-toolbar.ql-snow {
+            border-top-left-radius: var(--radius-btn);
+            border-top-right-radius: var(--radius-btn);
+            background: #f8fafc;
+            border-color: var(--admin-border);
+        }
+
+        .ql-container.ql-snow {
+            border-bottom-left-radius: var(--radius-btn);
+            border-bottom-right-radius: var(--radius-btn);
+            border-color: var(--admin-border);
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .preview-resizable {
+            resize: both;
+            overflow: auto;
+            border: 2px dashed #cbd5e1;
+            padding: 10px;
+            border-radius: var(--radius-btn);
+            background: #f8fafc;
+            min-height: 250px;
+            margin-bottom: 20px;
+            max-width: 100%;
+        }
+
+        .schedule-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 8px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                margin: 20px 10px;
+                padding: 20px;
+            }
+
+            .admin-header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .tab-buttons {
+                flex-direction: column;
+            }
+
+            .news-list-item {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+
+            .news-list-item>div:last-child {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .news-list-item button {
+                width: 100%;
+            }
+
+            .schedule-row {
+                flex-wrap: wrap;
+            }
+
+            .schedule-row input[type="time"] {
+                flex: 1 1 100%;
+            }
+
+            .schedule-row label {
+                flex: 1 1 calc(50% - 10px);
+            }
+
+            .schedule-row .rm-row {
+                flex: 1 1 100%;
+                margin: 5px 0 0 0 !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Main Header -->
+    <header class="admin-header" id="admin-header-main">
+        <div class="admin-header-content">
+            <h2 style="margin: 0; color: white; display: flex; align-items: center; gap: 10px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                </svg>
+                CMS Mleczek Bus
+            </h2>
+            <button id="logout-btn"
+                style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600;">Wyloguj
+                ze strony</button>
+        </div>
+    </header>
+
+    <!-- Login Screen -->
+    <div class="login-screen-wrapper" id="login-screen">
+        <div class="login-card">
+            <div class="login-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                    stroke="var(--admin-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    style="margin-bottom: 15px;">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                </svg>
+                <h1>MLECZEK<span>BUS</span></h1>
+                <p>Zaloguj się do panelu administratora</p>
+            </div>
+            <div id="login-alert" class="alert"></div>
+            <form id="login-form">
+                <div class="form-group">
+                    <input type="text" id="username" placeholder="Nazwa użytkownika" required autocomplete="username">
+                </div>
+                <div class="form-group" style="margin-bottom: 30px;">
+                    <input type="password" id="password" placeholder="Bezpieczne hasło" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="login-btn">Zaloguj się</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-container" id="admin-panel">
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="tab-files">Zarządzanie Plikami</button>
+            <button class="tab-btn" data-tab="tab-schedule-builder">Edytor Godzin (Silnik)</button>
+            <button class="tab-btn" data-tab="tab-news">Aktualności</button>
+        </div>
+
+        <div id="status-message" class="alert"></div>
+
+        <!-- Obsługa Plików -->
+        <div id="tab-files" class="tab-content active">
+            <div
+                style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border); margin-bottom: 20px;">
+                <h3>Aktualizacja pliku graficznego rozkładu</h3>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">Wgrany plik zastąpi dotychczasowy
+                    `rozklad.png` i od razu pojawi się na głównej stronie.</p>
+                <form id="upload-form">
+                    <div class="form-group">
+                        <input type="file" id="rozklad_image" accept="image/png, image/jpeg" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Wgraj zaktualizowany rozkład</button>
+                </form>
+            </div>
+
+            <div
+                style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                <h3>Aktualizacja pliku Regulaminu (PDF)</h3>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">Wgrany dokument zastąpi plik
+                    `regulamin.pdf` w serwisie.</p>
+                <form id="upload-regulamin-form">
+                    <div class="form-group">
+                        <input type="file" id="regulamin_file" accept="application/pdf" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Wgraj zaktualizowany regulamin</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edytor Harmonogramu (Silnik JSON) -->
+        <div id="tab-schedule-builder" class="tab-content">
+            <h3>Edytor godzin odjazdów (Silnik Strony)</h3>
+            <p style="margin-bottom: 20px; color: var(--text-secondary);">Zarządzaj odjazdami, które strona analizuje i
+                wyświetla jako "Najbliższy kurs". Zaznacz odpowiednie atrybuty dla danego kursu (powinno być spiskowane
+                w formacie HH:MM).</p>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                <select id="schedule-city-select" style="padding: 8px; border-radius: 4px; flex: 1; min-width: 150px;">
+                    <option value="myslenice">Z Myślenic</option>
+                    <option value="sulkowice">Z Sułkowic / Harbutowic</option>
+                </select>
+                <select id="schedule-day-select" style="padding: 8px; border-radius: 4px; flex: 1; min-width: 150px;">
+                    <option value="workdays">Poniedziałek - Piątek</option>
+                    <option value="saturday">Sobota</option>
+                </select>
+                <button type="button" id="load-schedule-view" class="btn-primary"
+                    style="padding: 6px 12px; font-size: 0.9rem; flex: 1; min-width: 100px;">Wczytaj</button>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px;">
+                <div id="schedule-table-container">
+                    <p>Kliknij wczytaj, aby zobaczyć kursy wybranego wariantu.</p>
+                </div>
+                <button type="button" id="add-schedule-row" class="btn-primary"
+                    style="margin-top: 15px; background: #64748b; font-size: 0.85rem; padding: 6px 12px; display: none;">+
+                    Dodaj kolejny kurs</button>
+            </div>
+
+            <button type="button" id="save-schedule-btn" class="btn-primary"
+                style="margin-top: 20px; width: 100%; display: none;">Zapisz zmiany w bazie</button>
+        </div>
+
+        <!-- Obsługa Aktualności -->
+        <div id="tab-news" class="tab-content">
+            <div style="display: flex; flex-direction: column; gap: 30px;">
+                <!-- Formularz tworzenia -->
+                <div>
+                    <h3 style="margin-bottom: 5px;">Kreator aktualności</h3>
+                    <p style="margin-bottom: 25px; color: var(--admin-text-light);">Użyj poniższego edytora, by stworzyć
+                        lub sformatować tekst (pogrubienia, tytuły, nagłówki). Wynik pojawi się na żywo w obszarze
+                        poniżej.</p>
+
+                    <form id="news-form">
+                        <div class="form-group">
+                            <label>Tytuł oficjalny (np. Rozkład kursów letnich)</label>
+                            <input type="text" id="news-title" required
+                                placeholder="Wprowadź przyciągający uwagę tytuł...">
+                        </div>
+                        <div class="form-group">
+                            <label>Treść ogłoszenia</label>
+                            <div id="news-editor" style="height: 300px; background: white;"></div>
+                        </div>
+                        <button type="submit" class="btn-primary" style="padding: 15px 30px;">Zapisz Publikację</button>
+                    </form>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--admin-border);">
+
+                <!-- Live Preview z Resize -->
+                <div>
+                    <h3 style="margin-bottom: 5px;">Podgląd na żywo 1:1</h3>
+                    <p style="margin-bottom: 20px; color: var(--admin-text-light);">Złap za prawy dolny róg i
+                        przeciągnij okno, by sprawdzić jak tekst układa się na różnych rozmiarach (telefon, tablet).</p>
+
+                    <!-- Resizable Window -->
+                    <div class="preview-resizable">
+                        <div class="news-item" id="live-preview-card" style="margin: 0;">
+                            <h3 class="news-title" id="live-preview-title">Tytuł ogłoszenia</h3>
+                            <div class="news-meta">
+                                <span class="news-date">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    <span id="live-preview-date-text"></span>
+                                </span>
+                                <span class="news-time">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    Godzina dodania: <span id="live-preview-time-text"></span>
+                                </span>
+                            </div>
+                            <div class="news-content-text" id="live-preview-content">Twój tekst i formatowanie pojawią
+                                się tutaj natychmiast...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin: 40px 0; border: 0; border-top: 1px solid var(--admin-border);">
+
+            <h3 style="margin-bottom: 20px;">Zarządzaj opublikowanymi wiadomościami</h3>
+            <div id="news-list">
+                <!-- Lista aktualności ładuje się dynamicznie -->
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>

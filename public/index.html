@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mleczek Bus - Start</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Condensed:wght@400;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-home" id="main-nav">
+        <div class="container nav-container">
+            <div class="logo">
+                <h1>MLECZEK<span>BUS</span></h1>
+            </div>
+
+            <button class="hamburger" id="hamburger-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="nav-links" id="nav-links">
+                <a href="#rozklad" class="active">Rozkład</a>
+                <a href="/cennik.html">Cennik</a>
+                <a href="regulamin.pdf" target="_blank">Regulamin</a>
+                <a href="/kontakt.html">Kontakt</a>
+                <a href="https://www.facebook.com/BUS.MLECZEK" target="_blank" aria-label="Facebook"
+                    style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                        fill="currentColor">
+                        <path
+                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header / Hero section -->
+    <header class="hero">
+        <div class="container">
+            <h2>Pewnie i na czas do celu.</h2>
+            <p>Sprawdź nasz rozkład jazdy i podróżuj z nami na trasie Myślenice - Sułkowice - Harbutowice.</p>
+            <button class="btn-primary" id="btn-show-modal">Zobacz Pełny Rozkład</button>
+        </div>
+    </header>
+
+    <main class="main-content" id="rozklad">
+        <!-- Departures -->
+        <section class="departures-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Najbliższe kursy</h2>
+                    <div class="title-underline"></div>
+                </div>
+
+                <div class="cards-grid">
+                    <!-- Myślenice -->
+                    <div class="departure-card">
+                        <div class="card-header">
+                            <div class="route-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="12" cy="10" r="3" />
+                                    <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3>Z Myślenic</h3>
+                                <span class="destination-subtext">Kierunek: Sułkowice/Harbutowice</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="time-display" id="next-myslenice-time">
+                                <span class="loader"></span>
+                            </div>
+                            <div class="time-notes" id="next-myslenice-notes">Wczytywanie...</div>
+                        </div>
+                        <div class="card-footer" id="following-myslenice-info">
+                            Następny: --:--
+                        </div>
+                    </div>
+
+                    <!-- Sułkowice -->
+                    <div class="departure-card">
+                        <div class="card-header">
+                            <div class="route-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="12" cy="10" r="3" />
+                                    <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3>Z Sułkowic</h3>
+                                <span class="destination-subtext">Kierunek: Myślenice</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="time-display" id="next-sulkowice-time">
+                                <span class="loader"></span>
+                            </div>
+                            <div class="time-notes" id="next-sulkowice-notes">Wczytywanie...</div>
+                        </div>
+                        <div class="card-footer" id="following-sulkowice-info">
+                            Następny: --:--
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="legend-section">
+            <div class="container">
+                <h4>Legenda oznaczeń z tablicy:</h4>
+                <ul class="legend-list">
+                    <li><span class="badge">H</span> - kurs do Harbutowic / odjazd z Harbutowic</li>
+                    <li><span class="badge">RD</span> - kurs przez Rudnik Dolny</li>
+                    <li><span class="badge">S</span> - kurs szkolny (nie kursuje w wakacje)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- News Section -->
+        <section class="news-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Aktualności</h2>
+                    <div class="title-underline"></div>
+                </div>
+
+                <div class="news-container" id="news-container">
+                    <p class="text-center">Wczytywanie komunikatów...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Professional Footer -->
+    <footer class="footer" id="kontakt">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h2>MLECZEK<span>BUS</span></h2>
+                    <p>Bezpieczne i komfortowe przewozy pasażerskie na trasie Myślenice - Sułkowice - Harbutowice.</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Na skróty</h3>
+                    <ul>
+                        <li><a href="#rozklad">Rozkład Jazdy</a></li>
+                        <li><a href="/cennik.html">Cennik</a></li>
+                        <li><a href="regulamin.pdf" target="_blank">Regulamin</a></li>
+                        <li><a href="/kontakt.html">Kontakt</a></li>
+                        <li><a href="/admin.html">Panel Administratora</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h3>Kontakt</h3>
+                    <p>Masz pytania? Skontaktuj się z nami po więcej informacji.</p>
+                    <p><strong>Telefon:</strong> <a href="tel:+48501456327"
+                            style="color: var(--accent-color); text-decoration: none; font-weight: 700; font-size: 1.2rem;">501
+                            456 327</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="current-year"></span> Mleczek BUS. Wszelkie prawa zastrzeżone.</p>
+                <p style="margin-top: 8px; font-size: 0.85rem; color: #64748b;">Projekt i wykonanie: <a
+                        href="https://bealang.pl" target="_blank"
+                        style="color: var(--accent-color); text-decoration: none;">bealang.pl</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Schedule Modal -->
+    <div class="modal-overlay" id="schedule-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close" aria-label="Zamknij">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <h3 class="modal-title">Pełny Rozkład Jazdy</h3>
+            <img src="rozklad.png" alt="Rozkład jazdy busów" class="modal-image">
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
