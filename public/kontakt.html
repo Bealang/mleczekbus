@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Condensed:wght@400;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
 </head>
 
@@ -50,26 +50,90 @@
         <section class="pricing-section bg-light">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">Kontakt</h2>
+                    <h2 class="section-title">Kontakt i O Firmie</h2>
                     <div class="title-underline"></div>
                 </div>
 
-                <div class="pricing-calculator" style="text-align: center; max-width: 600px; padding: 60px 20px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
-                        stroke="var(--accent-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        style="margin-bottom: 20px;">
-                        <path
-                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-                        </path>
-                    </svg>
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; max-width: 1100px; margin: 0 auto;">
 
-                    <h3 style="font-size: 1.5rem; margin-bottom: 15px; color: var(--primary-color);">Masz pytania
-                        dotyczące odjazdów lub biletów?</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 30px;">Zadzwoń do nas. Odpowiemy na wszystkie
-                        Twoje pytania.</p>
+                    <!-- Kontakt i Dane firmy -->
+                    <div class="pricing-calculator"
+                        style="text-align: left; padding: 40px; margin: 0; max-width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                            <div class="route-icon"
+                                style="background-color: rgba(11, 31, 56, 0.05); width: 48px; height: 48px; flex-shrink: 0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="var(--accent-color)" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 style="font-size: 1.5rem; color: var(--primary-color);">Kontakt i Dane Firmy</h3>
+                        </div>
 
-                    <a href="tel:+48501456327" class="btn-primary"
-                        style="display: inline-block; text-decoration: none; font-size: 1.5rem;">501 456 327</a>
+                        <div style="margin-bottom: 30px;">
+                            <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 1.05rem;">Masz
+                                pytania dotyczące odjazdów lub biletów? Zadzwoń do nas, chętnie odpowiemy.</p>
+                            <a href="tel:+48501456327" class="btn-primary"
+                                style="display: inline-block; text-decoration: none; font-size: 1.3rem; padding: 12px 28px;">501
+                                456 327</a>
+                        </div>
+
+                        <hr style="border: none; border-top: 1px solid var(--border-color); margin: 30px 0;">
+
+                        <ul style="list-style: none; color: var(--text-secondary); line-height: 2;">
+                            <li><strong style="color: var(--text-primary);">Nazwa:</strong> F.T.H.U. "Pedro" Piotr
+                                Mleczek</li>
+                            <li><strong style="color: var(--text-primary);">Siedziba:</strong> ul. Andrzeja
+                                Średniawskiego 10, 32-400 Myślenice</li>
+                            <li><strong style="color: var(--text-primary);">NIP:</strong> 6811820579</li>
+                            <li><strong style="color: var(--text-primary);">REGON:</strong> 363751044</li>
+                        </ul>
+                    </div>
+
+                    <!-- O firmie -->
+                    <div class="pricing-calculator"
+                        style="text-align: left; padding: 40px; margin: 0; max-width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                            <div class="route-icon"
+                                style="background-color: rgba(11, 31, 56, 0.05); width: 48px; height: 48px; flex-shrink: 0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="var(--accent-color)" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                            </div>
+                            <h3 style="font-size: 1.5rem; color: var(--primary-color);">O firmie</h3>
+                        </div>
+
+                        <div style="color: var(--text-secondary); line-height: 1.8; font-size: 1.05rem;">
+                            <p style="margin-bottom: 16px;">
+                                Od kilkunastu lat oferujemy regularny przewóz osób, łącząc <strong>Harbutowice,
+                                    Sułkowice, Rudnik i Jawornik </strong> z <strong>Myślenicami</strong>. Jako lokalny
+                                przewoźnik stawiamy przede wszystkim na
+                                rzetelność i dostępność.
+                            </p>
+                            <p style="margin-bottom: 16px;">
+                                Naszą wizytówką jest duża liczba kursów w ciągu dnia, co pozwala naszym pasażerom na
+                                pełną swobodę w planowaniu codziennych dojazdów do pracy, szkoły czy na zakupy. Wiemy,
+                                jak ważna jest punktualność, dlatego dbamy o to, by każdy przejazd odbywał się zgodnie z
+                                rozkładem.
+                            </p>
+                            <p>
+                                Przez lata obecności na trasie zdobyliśmy zaufanie wielu pasażerów, stając się stałym
+                                elementem lokalnego transportu. Wybierając Mleczek BUS, stawiasz na doświadczenie i
+                                pewność, że dotrzesz do celu na czas.
+                            </p>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
