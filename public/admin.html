@@ -9,12 +9,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
         :root {
-            --admin-bg: #f3f4f6;
+            --admin-bg: #ffffff;
             --admin-surface: #ffffff;
             --admin-border: #e5e7eb;
             --admin-primary: #0f172a;
@@ -29,7 +29,7 @@
 
         body {
             background-color: var(--admin-bg);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Outfit', sans-serif;
             color: var(--admin-text);
             margin: 0;
             padding: 0;
@@ -137,24 +137,13 @@
 
         .tab-content {
             display: none;
-            animation: fadeIn 0.3s ease-in-out;
         }
 
         .tab-content.active {
             display: block;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(5px);
-            }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
 
         .btn-primary {
             background: var(--admin-primary);
@@ -233,7 +222,9 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background: linear-gradient(rgba(11, 31, 56, 0.75), rgba(26, 54, 93, 0.75)), url('bus.png');
+            background-size: cover;
+            background-position: center;
             position: fixed;
             top: 0;
             left: 0;
@@ -242,18 +233,15 @@
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(11, 31, 56, 0.95);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
+            border-radius: 0;
             padding: 50px 40px;
             width: 100%;
             max-width: 420px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             text-align: center;
             color: #fff;
-            animation: fadeIn 0.5s ease-out;
         }
 
         .login-logo h1 {
@@ -278,7 +266,7 @@
             background: rgba(0, 0, 0, 0.2) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             color: #fff !important;
-            border-radius: 12px;
+            border-radius: 0;
             padding: 14px 20px;
             transition: all 0.3s;
         }
@@ -290,17 +278,17 @@
         .login-card .form-group input:focus {
             background: rgba(0, 0, 0, 0.4) !important;
             border-color: var(--admin-accent) !important;
-            box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.1) !important;
+            box-shadow: none !important;
         }
 
         .login-btn {
-            background: var(--admin-accent);
-            color: #000;
+            background: var(--accent-color);
+            color: var(--primary-color);
             font-weight: 700;
             width: 100%;
             padding: 14px 20px;
             border: none;
-            border-radius: 12px;
+            border-radius: 0;
             font-size: 1.05rem;
             cursor: pointer;
             transition: all 0.3s;
@@ -308,13 +296,39 @@
 
         .login-btn:hover {
             background: #facc15;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(234, 179, 8, 0.3);
         }
 
         #admin-panel,
         #admin-header-main {
             display: none;
+        }
+
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-btn);
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .header-logout {
+            background: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .header-logout:hover {
+            background: #dc2626;
+            border-color: #dc2626;
         }
 
         .ql-toolbar.ql-snow {
@@ -408,21 +422,20 @@
 
 <body>
     <!-- Main Header -->
-    <header class="admin-header" id="admin-header-main">
-        <div class="admin-header-content">
-            <h2 style="margin: 0; color: white; display: flex; align-items: center; gap: 10px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 20h9"></path>
-                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                </svg>
-                CMS Mleczek Bus
-            </h2>
-            <button id="logout-btn"
-                style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600;">Wyloguj
-                ze strony</button>
+    <nav class="navbar" id="admin-header-main">
+        <div class="container nav-container">
+            <div class="logo">
+                <a href="/index.html" style="text-decoration: none;">
+                    <h1>MLECZEK<span>BUS</span></h1>
+                </a>
+            </div>
+
+            <div class="nav-links">
+                <a href="/index.html">Strona główna</a>
+                <button id="logout-btn-header" class="btn-logout header-logout">Wyloguj się</button>
+            </div>
         </div>
-    </header>
+    </nav>
 
     <!-- Login Screen -->
     <div class="login-screen-wrapper" id="login-screen">
@@ -435,7 +448,6 @@
                     <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
                 </svg>
                 <h1>MLECZEK<span>BUS</span></h1>
-                <p>Zaloguj się do panelu administratora</p>
             </div>
             <div id="login-alert" class="alert"></div>
             <form id="login-form">
@@ -443,8 +455,7 @@
                     <input type="text" id="username" placeholder="Nazwa użytkownika" required autocomplete="username">
                 </div>
                 <div class="form-group" style="margin-bottom: 30px;">
-                    <input type="password" id="password" placeholder="Bezpieczne hasło" required
-                        autocomplete="current-password">
+                    <input type="password" id="password" placeholder="Hasło" required autocomplete="current-password">
                 </div>
                 <button type="submit" class="login-btn">Zaloguj się</button>
             </form>
@@ -571,15 +582,6 @@
                                     </svg>
                                     <span id="live-preview-date-text"></span>
                                 </span>
-                                <span class="news-time">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <polyline points="12 6 12 12 16 14"></polyline>
-                                    </svg>
-                                    Godzina dodania: <span id="live-preview-time-text"></span>
-                                </span>
                             </div>
                             <div class="news-content-text" id="live-preview-content">Twój tekst i formatowanie pojawią
                                 się tutaj natychmiast...</div>
@@ -595,6 +597,8 @@
                 <!-- Lista aktualności ładuje się dynamicznie -->
             </div>
         </div>
+
+
 
     </div>
 

@@ -183,7 +183,7 @@ app.post('/api/admin/upload-regulamin', requireAuth, uploadPdf.single('regulamin
 // Manage news
 app.post('/api/admin/news', requireAuth, async (req, res) => {
     const { title, content } = req.body;
-    const date = new Date().toISOString().split('T')[0];
+    const date = new Date().toISOString();
     
     try {
         await db.run('INSERT INTO news (date, title, content) VALUES (?, ?, ?)', [date, title, content]);

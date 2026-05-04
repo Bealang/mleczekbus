@@ -47,11 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             if (data.authenticated) {
                 document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('admin-header-main').style.display = 'block';
                 document.getElementById('admin-panel').style.display = 'block';
                 loadAdminNews();
                 loadAdminSchedule();
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('admin-header-main').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'none';
             }
         } catch(e) {
@@ -100,10 +102,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Logout
-    document.getElementById('logout-btn').addEventListener('click', async () => {
+    const logout = async () => {
         await fetch('/api/logout');
         checkAuth();
-    });
+    };
+
+    document.getElementById('logout-btn-header').addEventListener('click', logout);
 
     // Upload Schedule Image
     document.getElementById('upload-form').addEventListener('submit', async (e) => {
@@ -255,12 +259,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewTitle = document.getElementById('live-preview-title');
     const previewContent = document.getElementById('live-preview-content');
     const previewDate = document.getElementById('live-preview-date-text');
-    const previewTime = document.getElementById('live-preview-time-text');
 
     // Mocks initial date and time
     const now = new Date();
     previewDate.textContent = now.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
-    previewTime.textContent = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
     titleInput.addEventListener('input', () => {
         previewTitle.textContent = titleInput.value || 'Tytuł ogłoszenia';
@@ -368,12 +370,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         newsList.forEach(news => {
+            let dateStr = news.date;
+            if (news.date && news.date.includes('T')) {
+                dateStr = new Date(news.date).toLocaleDateString('pl-PL') + ' ' + new Date(news.date).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+            }
             const div = document.createElement('div');
             div.className = 'news-list-item';
             div.innerHTML = `
                 <div style="flex-grow: 1; padding-right: 20px;">
                     <strong>${news.title}</strong>
-                    <div style="font-size: 0.85rem; color: #64748b;">${news.date} - ${news.content.replace(/<[^>]*>?/gm, '').substring(0, 50)}...</div>
+                    <div style="font-size: 0.85rem; color: #64748b;">${dateStr} - ${news.content.replace(/<[^>]*>?/gm, '').substring(0, 50)}...</div>
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <button class="btn-primary" style="padding: 8px 16px; font-size: 0.9rem;" onclick="editNews(${news.id})">Edytuj</button>

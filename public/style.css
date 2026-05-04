@@ -27,7 +27,7 @@
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Outfit', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-primary);
     line-height: 1.6;
@@ -878,5 +878,16 @@ h1, h2, h3, h4, h5, h6 {
     
     .news-title {
         font-size: 1.25rem;
+    }
+
+    .legend-section {
+        text-align: left;
+    }
+
+    .legend-list {
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 12px;
     }
 }

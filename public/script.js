@@ -167,13 +167,19 @@ function renderNewsClient(container) {
     }
 
     container.innerHTML = visibleNews.map(item => {
-        let dateObj = new Date(item.id);
-        if (isNaN(dateObj.getTime()) || item.id < 10000) {
-            dateObj = new Date(item.date);
+        let dateObj = new Date(item.date);
+        if (!item.date.includes('T') && item.id > 10000) {
+            let idDate = new Date(item.id);
+            if (!isNaN(idDate.getTime())) {
+                if (idDate.getFullYear() === dateObj.getFullYear() && 
+                    idDate.getMonth() === dateObj.getMonth() && 
+                    idDate.getDate() === dateObj.getDate()) {
+                    dateObj = idDate;
+                }
+            }
         }
         
         const dateStr = dateObj.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
-        const timeStr = dateObj.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
         return `
         <div class="news-item">
@@ -182,10 +188,6 @@ function renderNewsClient(container) {
                 <span class="news-date">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                     ${dateStr}
-                </span>
-                <span class="news-time">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    Godzina dodania: ${timeStr}
                 </span>
             </div>
             <div class="news-content-text">${item.content}</div>
