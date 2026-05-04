@@ -10,12 +10,11 @@ const sqlite3 = require('sqlite3').verbose();
 const sqlite = require('sqlite');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Configuration
 const ADMIN_USER = 'pmleczek';
 const ADMIN_HASH = process.env.ADMIN_HASH;
-
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
