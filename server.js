@@ -14,12 +14,19 @@ const PORT = process.env.PORT || 3000;
 // Configuration
 const ADMIN_USER = 'pmleczek';
 const ADMIN_HASH = process.env.ADMIN_HASH;
+
+// Ensure data directory exists
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+}
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', 1); // Trust proxy if behind Nginx/Cloudflare for secure cookies
 app.use(session({
-    store: new SQLiteStore({ db: 'sessions.sqlite', dir: path.join(__dirname, 'data') }),
+    store: new SQLiteStore({ db: 'sessions.sqlite', dir: dataDir }),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
@@ -51,7 +58,7 @@ const pdfStorage = multer.diskStorage({
 const uploadPdf = multer({ storage: pdfStorage });
 
 // Database initialization
-const db = new Database(path.join(__dirname, 'data', 'database.sqlite'));
+const db = new Database(path.join(dataDir, 'database.sqlite'));
 
 db.pragma('foreign_keys = ON');
 
