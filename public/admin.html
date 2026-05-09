@@ -12,6 +12,7 @@
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         :root {
             --admin-bg: #ffffff;
@@ -417,6 +418,53 @@
                 margin: 5px 0 0 0 !important;
             }
         }
+
+        /* Toast Notifications */
+        #notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            padding: 16px 24px;
+            background: rgba(11, 31, 56, 0.85);
+            color: white;
+            backdrop-filter: blur(8px);
+            border-left: 5px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease-out;
+            font-weight: 500;
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+
+        .toast-icon {
+            font-size: 1.2rem;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        .toast.hiding {
+            animation: fadeOut 0.5s ease-in forwards;
+        }
     </style>
 </head>
 
@@ -467,10 +515,11 @@
         <div class="tab-buttons">
             <button class="tab-btn active" data-tab="tab-files">Zarządzanie Plikami</button>
             <button class="tab-btn" data-tab="tab-schedule-builder">Edytor Godzin (Silnik)</button>
+            <button class="tab-btn" data-tab="tab-pricing">Cennik</button>
             <button class="tab-btn" data-tab="tab-news">Aktualności</button>
         </div>
 
-        <div id="status-message" class="alert"></div>
+        <div id="notification-container"></div>
 
         <!-- Obsługa Plików -->
         <div id="tab-files" class="tab-content active">
@@ -532,6 +581,52 @@
 
             <button type="button" id="save-schedule-btn" class="btn-primary"
                 style="margin-top: 20px; width: 100%; display: none;">Zapisz zmiany w bazie</button>
+        </div>
+
+        <!-- Edytor Cennika -->
+        <div id="tab-pricing" class="tab-content">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <!-- Zarządzanie przystankami -->
+                <div style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                    <h3>Zarządzanie Przystankami</h3>
+                    <form id="add-stop-form" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <input type="text" id="new-stop-name" placeholder="Nazwa przystanku..." style="flex: 1; padding: 8px;">
+                        <button type="submit" class="btn-primary" style="padding: 8px 16px;">Dodaj</button>
+                    </form>
+                    <div id="stops-list-container" style="max-height: 400px; overflow-y: auto;">
+                        <!-- Lista przystanków -->
+                    </div>
+                </div>
+
+                <!-- Edytor cen relacji -->
+                <div style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                    <h3>Edytor Cen Relacji</h3>
+                    <div class="form-group">
+                        <label>Przystanek A (Bazowy)</label>
+                        <select id="price-stop-a"></select>
+                    </div>
+                    <div class="form-group">
+                        <label id="label-stop-b">Przystanek B (Docelowy)</label>
+                        <select id="price-stop-b"></select>
+                    </div>
+
+                    <div id="price-inputs" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <div class="form-group">
+                            <label>Bilet jednorazowy (zł)</label>
+                            <input type="number" step="0.10" id="price-s" placeholder="np. 6.50">
+                        </div>
+                        <div class="form-group">
+                            <label>Bilet miesięczny (zł)</label>
+                            <input type="number" step="1" id="price-m" placeholder="np. 180">
+                        </div>
+                        <div class="form-group">
+                            <label>Miesięczny ulgowy (zł)</label>
+                            <input type="number" step="1" id="price-md" placeholder="np. 140">
+                        </div>
+                        <button type="button" id="save-price-btn" class="btn-primary" style="width: 100%;">Zapisz cenę dla tej relacji</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Obsługa Aktualności -->

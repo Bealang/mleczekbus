@@ -409,7 +409,31 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom-left-radius: var(--radius-md);
     border-bottom-right-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
-    overflow: hidden;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.select-search-container {
+    position: sticky;
+    top: 0;
+    background: white;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    z-index: 2;
+}
+
+.select-search {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.select-search:focus {
+    outline: none;
+    border-color: var(--accent-color);
 }
 
 .select-items div {

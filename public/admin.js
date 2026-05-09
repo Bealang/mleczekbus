@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     let fullScheduleData = null;
     let editingNewsId = null;
+    let allStops = [];
+    let allPrices = [];
     
     // Initialize Quill Editor
     var quill = new Quill('#news-editor', {
@@ -35,10 +37,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function showStatus(msg, type='success') {
-        const el = document.getElementById('status-message');
-        el.textContent = msg;
-        el.className = `alert ${type}`;
-        setTimeout(() => { el.style.display = 'none'; }, 5000);
+        const container = document.getElementById('notification-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icon = type === 'success' ? '✅' : '⚠️';
+        
+        toast.innerHTML = `
+            <span class="toast-icon">${icon}</span>
+            <span class="toast-message">${msg}</span>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Console reporting
+        if (type === 'success') {
+            console.log(`%c[ADMIN SUCCESS] ${msg}`, 'color: #10b981; font-weight: bold;');
+        } else {
+            console.error(`%c[ADMIN ERROR] ${msg}`, 'color: #ef4444; font-weight: bold;');
+        }
+
+        setTimeout(() => {
+            toast.classList.add('hiding');
+            setTimeout(() => {
+                toast.remove();
+            }, 500);
+        }, 4000);
     }
 
     async function checkAuth() {
@@ -51,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('admin-panel').style.display = 'block';
                 loadAdminNews();
                 loadAdminSchedule();
+                loadPricingData();
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
                 document.getElementById('admin-header-main').style.display = 'none';
@@ -125,13 +150,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (res.ok) {
-                showStatus(data.message, 'success');
+                showStatus('Pomyślnie zaktualizowano plik rozkładu (.png)', 'success');
                 fileInput.value = '';
             } else {
-                showStatus(data.error, 'error');
+                showStatus(data.error || 'Błąd podczas wgrywania rozkładu', 'error');
             }
         } catch (err) {
-            showStatus('Wystąpił błąd podczas wgrywania pliku.', 'error');
+            showStatus('Wystąpił krytyczny błąd połączenia przy wgrywaniu rozkładu.', 'error');
+            console.error("Critical upload error:", err);
         }
     });
 
@@ -151,13 +177,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (res.ok) {
-                showStatus(data.message, 'success');
+                showStatus('Pomyślnie zaktualizowano plik regulaminu (.pdf)', 'success');
                 fileInput.value = '';
             } else {
-                showStatus(data.error, 'error');
+                showStatus(data.error || 'Błąd podczas wgrywania regulaminu', 'error');
             }
         } catch (err) {
-            showStatus('Wystąpił błąd podczas wgrywania pliku.', 'error');
+            showStatus('Wystąpił krytyczny błąd połączenia przy wgrywaniu regulaminu.', 'error');
+            console.error("Critical regulamin upload error:", err);
         }
     });
 
@@ -280,11 +307,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // News Submit (Add / Edit)
     document.getElementById('news-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const title = document.getElementById('news-title').value;
-        const content = quill.root.innerHTML;
-        
+        if(!title || title.trim() === '') {
+            showStatus('Nie można opublikować: Brakuje tytułu aktualności!', 'error');
+            return;
+        }
+
         if(quill.getText().trim() === '') {
-            showStatus('Treść wiadomości nie może być pusta.', 'error');
+            showStatus('Nie można opublikować: Treść wiadomości nie może być pusta.', 'error');
             return;
         }
 
@@ -300,12 +329,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await res.json();
             if (res.ok) {
-                showStatus(data.message, 'success');
+                showStatus(editingNewsId ? 'Aktualność została pomyślnie zedytowana.' : 'Nowa aktualność została opublikowana!', 'success');
                 cancelEditing();
                 renderNewsList(data.news);
+            } else {
+                showStatus(data.error || 'Błąd podczas zapisywania aktualności.', 'error');
             }
         } catch(err) {
-             showStatus('Błąd podczas zapisywania komunikatu.', 'error');
+             showStatus('Błąd sieci/serwera podczas publikacji.', 'error');
+             console.error("News saving error:", err);
         }
     });
 
@@ -406,11 +438,244 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if(res.ok) {
-                showStatus(data.message, 'success');
+                showStatus('Aktualność została pomyślnie usunięta.', 'success');
                 renderNewsList(data.news);
+            } else {
+                showStatus(data.error || 'Błąd podczas usuwania aktualności.', 'error');
             }
         } catch(err) {
-            showStatus('Błąd przy usuwaniu.', 'error');
+            showStatus('Błąd połączenia podczas usuwania aktualności.', 'error');
+            console.error("News deletion error:", err);
         }
     }
+
+    // --- PRICING LOGIC ---
+    async function loadPricingData() {
+        try {
+            const res = await fetch('/api/pricing-data');
+            const data = await res.json();
+            allStops = data.stops;
+            allPrices = data.prices;
+            renderStopsList();
+            populatePriceDropdowns();
+        } catch (e) {
+            console.error("Failed to load pricing data", e);
+        }
+    }
+
+    function renderStopsList() {
+        const container = document.getElementById('stops-list-container');
+        container.innerHTML = '';
+        if (allStops.length === 0) {
+            container.innerHTML = '<p style="color: #64748b; font-size: 0.9rem;">Brak dodanych przystanków.</p>';
+            return;
+        }
+
+        allStops.forEach(stop => {
+            const div = document.createElement('div');
+            div.className = 'stop-item';
+            div.dataset.id = stop.id;
+            div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 6px; background: #f8fafc;';
+            div.innerHTML = `
+                <div style="display: flex; align-items: center;">
+                    <span class="drag-handle">☰</span>
+                    <span>${stop.name}</span>
+                </div>
+                <button class="btn-danger" style="padding: 4px 8px; font-size: 0.8rem;" onclick="deleteStop(${stop.id})">Usuń</button>
+            `;
+            container.appendChild(div);
+        });
+
+        // Initialize Sortable
+        new Sortable(container, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            onEnd: function() {
+                saveReorder();
+            }
+        });
+    }
+
+    async function saveReorder() {
+        const items = document.querySelectorAll('.stop-item');
+        const orders = Array.from(items).map((item, index) => ({
+            id: parseInt(item.dataset.id),
+            sort_order: index
+        }));
+
+        try {
+            const res = await fetch('/api/admin/stops/reorder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orders })
+            });
+            if (res.ok) {
+                // Refresh local data to match server sort
+                const data = await fetch('/api/pricing-data').then(r => r.json());
+                allStops = data.stops;
+                populatePriceDropdowns();
+            }
+        } catch (e) { console.error("Reorder failed", e); }
+    }
+
+    window.deleteStop = async (id) => {
+        if (!confirm('Na pewno usunąć ten przystanek? Spowoduje to również usunięcie wszystkich powiązanych cen!')) return;
+        try {
+            const res = await fetch(`/api/admin/stops/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                const data = await res.json();
+                allStops = data.stops;
+                showStatus('Przystanek usunięty pomyślnie.', 'success');
+                loadPricingData(); // Reload everything to refresh prices
+            } else {
+                showStatus('Błąd podczas usuwania przystanku.', 'error');
+            }
+        } catch (e) { 
+            showStatus('Krytyczny błąd podczas usuwania przystanku.', 'error'); 
+            console.error("Stop deletion error:", e);
+        }
+    };
+
+    document.getElementById('add-stop-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('new-stop-name').value.trim();
+        if (!name) {
+            showStatus('Wpisz nazwę przystanku przed dodaniem.', 'error');
+            return;
+        }
+        try {
+            const res = await fetch('/api/admin/stops', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                allStops = data.stops;
+                document.getElementById('new-stop-name').value = '';
+                showStatus(`Przystanek "${name}" został dodany.`, 'success');
+                loadPricingData();
+            } else { 
+                showStatus(data.error || 'Błąd dodawania przystanku.', 'error'); 
+            }
+        } catch (e) { 
+            showStatus('Błąd połączenia przy dodawaniu przystanku.', 'error'); 
+            console.error("Add stop error:", e);
+        }
+    });
+
+    function populatePriceDropdowns() {
+        const selectA = document.getElementById('price-stop-a');
+        const selectB = document.getElementById('price-stop-b');
+        const prevA = selectA.value;
+        const prevB = selectB.value;
+
+        selectA.innerHTML = '<option value="">-- Wybierz przystanek A --</option>';
+        selectB.innerHTML = '<option value="">-- Wybierz przystanek B --</option>';
+
+        allStops.forEach(stop => {
+            selectA.add(new Option(stop.name, stop.id));
+            selectB.add(new Option(stop.name, stop.id));
+        });
+
+        if (prevA) selectA.value = prevA;
+        if (prevB) selectB.value = prevB;
+        
+        updatePriceForm();
+    }
+
+    function updatePriceForm() {
+        const id1 = parseInt(document.getElementById('price-stop-a').value);
+        const selectB = document.getElementById('price-stop-b');
+        const id2 = parseInt(selectB.value);
+        
+        // Reset inputs
+        document.getElementById('price-s').value = '';
+        document.getElementById('price-m').value = '';
+        document.getElementById('price-md').value = '';
+
+        if (!id1) {
+            // Reset colors if A is not selected
+            Array.from(selectB.options).forEach(opt => opt.style.color = '');
+            return;
+        }
+
+        // Color options in B based on existing prices with A
+        Array.from(selectB.options).forEach(opt => {
+            const bId = parseInt(opt.value);
+            if (!bId || bId === id1) {
+                opt.style.color = '';
+                return;
+            }
+
+            const stop1 = Math.min(id1, bId);
+            const stop2 = Math.max(id1, bId);
+            const hasPrice = allPrices.some(p => p.stop1_id === stop1 && p.stop2_id === stop2);
+            
+            opt.style.color = hasPrice ? '' : '#ef4444'; // Red if no price
+            if (!hasPrice) {
+                opt.text = opt.text.replace(' (brak ceny)', '') + ' (brak ceny)';
+            } else {
+                opt.text = opt.text.replace(' (brak ceny)', '');
+            }
+        });
+
+        if (!id2 || id1 === id2) return;
+
+        const stop1 = Math.min(id1, id2);
+        const stop2 = Math.max(id1, id2);
+        const price = allPrices.find(p => p.stop1_id === stop1 && p.stop2_id === stop2);
+
+        if (price) {
+            document.getElementById('price-s').value = price.price_s;
+            document.getElementById('price-m').value = price.price_m;
+            document.getElementById('price-md').value = price.price_md;
+        }
+    }
+
+    document.getElementById('price-stop-a').addEventListener('change', updatePriceForm);
+    document.getElementById('price-stop-b').addEventListener('change', updatePriceForm);
+
+    // Auto-calculate discount (-49%)
+    document.getElementById('price-m').addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        if (!isNaN(val)) {
+            // Ulgowy to -49% czyli 51% ceny podstawowej
+            const discounted = (val * 0.51).toFixed(2);
+            document.getElementById('price-md').value = discounted;
+        }
+    });
+
+    document.getElementById('save-price-btn').addEventListener('click', async () => {
+        const stop1_id = parseInt(document.getElementById('price-stop-a').value);
+        const stop2_id = parseInt(document.getElementById('price-stop-b').value);
+        const price_s = parseFloat(document.getElementById('price-s').value);
+        const price_m = parseFloat(document.getElementById('price-m').value);
+        const price_md = parseFloat(document.getElementById('price-md').value);
+
+        if (!stop1_id || !stop2_id || isNaN(price_s)) {
+            showStatus('Wypełnij przynajmniej cenę jednorazową.', 'error');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/admin/pricing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stop1_id, stop2_id, price_s, price_m, price_md })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                allPrices = data.prices;
+                showStatus('Cena relacji została pomyślnie zapisana.', 'success');
+                updatePriceForm();
+            } else {
+                showStatus(data.error || 'Błąd podczas zapisywania ceny.', 'error');
+            }
+        } catch (e) { 
+            showStatus('Błąd połączenia podczas zapisywania ceny.', 'error'); 
+            console.error("Price save error:", e);
+        }
+    });
 });

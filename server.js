@@ -6,8 +6,7 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
-const sqlite3 = require('sqlite3').verbose();
-const sqlite = require('sqlite');
+const Database = require('better-sqlite3');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -52,44 +51,37 @@ const pdfStorage = multer.diskStorage({
 const uploadPdf = multer({ storage: pdfStorage });
 
 // Database initialization
-let db;
-async function initDB() {
-    db = await sqlite.open({
-        filename: path.join(__dirname, 'data', 'database.sqlite'),
-        driver: sqlite3.Database
-    });
+const db = new Database(path.join(__dirname, 'data', 'database.sqlite'));
 
-    await db.exec(`
-        CREATE TABLE IF NOT EXISTS news (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT,
-            title TEXT,
-            content TEXT
-        );
-        CREATE TABLE IF NOT EXISTS config (
-            key TEXT PRIMARY KEY,
-            value TEXT
-        );
-    `);
+db.pragma('foreign_keys = ON');
 
-    // Migrate existing JSON data if SQLite is empty
-    const newsCount = await db.get('SELECT COUNT(*) as count FROM news');
-    if (newsCount.count === 0 && fs.existsSync(path.join(__dirname, 'data', 'news.json'))) {
-        const oldNews = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'news.json'), 'utf8'));
-        // Sort ascending by id so the newest gets the highest id and we keep them backwards
-        oldNews.sort((a,b) => a.id - b.id);
-        for (const n of oldNews) {
-            await db.run('INSERT INTO news (id, date, title, content) VALUES (?, ?, ?, ?)', [n.id, n.date, n.title, n.content]);
-        }
-    }
-
-    const scheduleRow = await db.get('SELECT value FROM config WHERE key = "schedule"');
-    if (!scheduleRow && fs.existsSync(path.join(__dirname, 'data', 'schedule.json'))) {
-        const oldScheduleStr = fs.readFileSync(path.join(__dirname, 'data', 'schedule.json'), 'utf8');
-        await db.run('INSERT INTO config (key, value) VALUES ("schedule", ?)', [oldScheduleStr]);
-    }
-}
-initDB();
+db.exec(`
+    CREATE TABLE IF NOT EXISTS news (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT,
+        title TEXT,
+        content TEXT
+    );
+    CREATE TABLE IF NOT EXISTS config (
+        key TEXT PRIMARY KEY,
+        value TEXT
+    );
+    CREATE TABLE IF NOT EXISTS stops (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE,
+        sort_order INTEGER DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS pricing (
+        stop1_id INTEGER,
+        stop2_id INTEGER,
+        price_s REAL,
+        price_m REAL,
+        price_md REAL,
+        PRIMARY KEY(stop1_id, stop2_id),
+        FOREIGN KEY(stop1_id) REFERENCES stops(id) ON DELETE CASCADE,
+        FOREIGN KEY(stop2_id) REFERENCES stops(id) ON DELETE CASCADE
+    );
+`);
 
 // --- AUTH API ---
 app.post('/api/login', (req, res) => {
@@ -121,9 +113,9 @@ const requireAuth = (req, res, next) => {
 };
 
 // --- PUBLIC API ---
-app.get('/api/schedule', async (req, res) => {
+app.get('/api/schedule', (req, res) => {
     try {
-        const row = await db.get('SELECT value FROM config WHERE key = "schedule"');
+        const row = db.prepare("SELECT value FROM config WHERE key = 'schedule'").get();
         res.json(row ? JSON.parse(row.value) : {});
     } catch (error) {
         console.error("Błąd bazy danych (schedule):", error);
@@ -131,9 +123,9 @@ app.get('/api/schedule', async (req, res) => {
     }
 });
 
-app.get('/api/news', async (req, res) => {
+app.get('/api/news', (req, res) => {
     try {
-        const rows = await db.all('SELECT * FROM news ORDER BY id DESC');
+        const rows = db.prepare('SELECT * FROM news ORDER BY id DESC').all();
         res.json(rows);
     } catch (error) {
         console.error("Błąd bazy danych (news):", error);
@@ -141,21 +133,32 @@ app.get('/api/news', async (req, res) => {
     }
 });
 
+app.get('/api/pricing-data', (req, res) => {
+    try {
+        const stops = db.prepare('SELECT * FROM stops ORDER BY sort_order ASC, id DESC').all();
+        const prices = db.prepare('SELECT * FROM pricing').all();
+        res.json({ stops, prices });
+    } catch (error) {
+        console.error("Błąd bazy danych (pricing-data):", error);
+        res.status(500).json({ error: 'Błąd podczas pobierania danych cennika.' });
+    }
+});
+
 // --- ADMIN API ---
 
 // Update schedule JSON
-app.post('/api/admin/schedule', requireAuth, async (req, res) => {
+app.post('/api/admin/schedule', requireAuth, (req, res) => {
     const newSchedule = req.body;
-    
+
     // Deep validation of schedule format
     const isValidCourses = (courses) => Array.isArray(courses) && courses.every(c => c && typeof c.time === 'string' && Array.isArray(c.notes));
     const isValidVariant = (variant) => variant && isValidCourses(variant.workdays) && isValidCourses(variant.saturday) && isValidCourses(variant.sunday);
-    
+
     if (!newSchedule || !isValidVariant(newSchedule.myslenice) || !isValidVariant(newSchedule.sulkowice)) {
         return res.status(400).json({ error: 'Nieprawidłowy format danych rozkładu.' });
     }
     try {
-        await db.run('INSERT INTO config (key, value) VALUES ("schedule", ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value', [JSON.stringify(newSchedule)]);
+        db.prepare("INSERT INTO config (key, value) VALUES ('schedule', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(JSON.stringify(newSchedule));
         res.json({ success: true, message: 'Rozkład został zaktualizowany.' });
     } catch (error) {
         console.error("Błąd bazy danych przy zapisie rozkładu:", error);
@@ -181,13 +184,13 @@ app.post('/api/admin/upload-regulamin', requireAuth, uploadPdf.single('regulamin
 });
 
 // Manage news
-app.post('/api/admin/news', requireAuth, async (req, res) => {
+app.post('/api/admin/news', requireAuth, (req, res) => {
     const { title, content } = req.body;
     const date = new Date().toISOString();
-    
+
     try {
-        await db.run('INSERT INTO news (date, title, content) VALUES (?, ?, ?)', [date, title, content]);
-        const news = await db.all('SELECT * FROM news ORDER BY id DESC');
+        db.prepare('INSERT INTO news (date, title, content) VALUES (?, ?, ?)').run(date, title, content);
+        const news = db.prepare('SELECT * FROM news ORDER BY id DESC').all();
         res.json({ success: true, message: 'Aktualność dodana.', news });
     } catch (error) {
         console.error("Błąd bazy danych przy dodawaniu newsa:", error);
@@ -195,11 +198,11 @@ app.post('/api/admin/news', requireAuth, async (req, res) => {
     }
 });
 
-app.delete('/api/admin/news/:id', requireAuth, async (req, res) => {
+app.delete('/api/admin/news/:id', requireAuth, (req, res) => {
     const id = parseInt(req.params.id);
     try {
-        await db.run('DELETE FROM news WHERE id = ?', [id]);
-        const news = await db.all('SELECT * FROM news ORDER BY id DESC');
+        db.prepare('DELETE FROM news WHERE id = ?').run(id);
+        const news = db.prepare('SELECT * FROM news ORDER BY id DESC').all();
         res.json({ success: true, message: 'Aktualność usunięta.', news });
     } catch (error) {
         console.error("Błąd bazy danych przy usuwaniu newsa:", error);
@@ -207,14 +210,14 @@ app.delete('/api/admin/news/:id', requireAuth, async (req, res) => {
     }
 });
 
-app.put('/api/admin/news/:id', requireAuth, async (req, res) => {
+app.put('/api/admin/news/:id', requireAuth, (req, res) => {
     const id = parseInt(req.params.id);
     const { title, content } = req.body;
-    
+
     try {
-        const result = await db.run('UPDATE news SET title = ?, content = ? WHERE id = ?', [title, content, id]);
+        const result = db.prepare('UPDATE news SET title = ?, content = ? WHERE id = ?').run(title, content, id);
         if (result.changes > 0) {
-            const news = await db.all('SELECT * FROM news ORDER BY id DESC');
+            const news = db.prepare('SELECT * FROM news ORDER BY id DESC').all();
             res.json({ success: true, message: 'Pomyślnie zaktualizowano aktualność.', news });
         } else {
             res.status(404).json({ error: 'Nie znaleziono aktualności.' });
@@ -222,6 +225,83 @@ app.put('/api/admin/news/:id', requireAuth, async (req, res) => {
     } catch (error) {
         console.error("Błąd bazy danych przy edycji newsa:", error);
         res.status(500).json({ error: 'Błąd podczas edycji aktualności w bazie.' });
+    }
+});
+
+// --- PRICING ADMIN API ---
+
+app.post('/api/admin/stops', requireAuth, (req, res) => {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'Nazwa przystanku jest wymagana.' });
+    
+    try {
+        // Nowe przystanki mają domyślnie sort_order = 0, będą na początku przy ORDER BY sort_order ASC, id DESC
+        db.prepare('INSERT INTO stops (name) VALUES (?)').run(name);
+        const stops = db.prepare('SELECT * FROM stops ORDER BY sort_order ASC, id DESC').all();
+        res.json({ success: true, message: 'Przystanek dodany.', stops });
+    } catch (error) {
+        if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+            return res.status(400).json({ error: 'Przystanek o tej nazwie już istnieje.' });
+        }
+        res.status(500).json({ error: 'Błąd podczas dodawania przystanku.' });
+    }
+});
+
+app.post('/api/admin/stops/reorder', requireAuth, (req, res) => {
+    const { orders } = req.body; // Array of {id, sort_order}
+    if (!Array.isArray(orders)) return res.status(400).json({ error: 'Nieprawidłowe dane.' });
+
+    const updateStmt = db.prepare('UPDATE stops SET sort_order = ? WHERE id = ?');
+    
+    try {
+        const transaction = db.transaction((data) => {
+            for (const item of data) {
+                updateStmt.run(item.sort_order, item.id);
+            }
+        });
+        transaction(orders);
+        res.json({ success: true, message: 'Kolejność została zapisana.' });
+    } catch (error) {
+        console.error("Błąd reorderowania:", error);
+        res.status(500).json({ error: 'Błąd podczas zapisywania kolejności.' });
+    }
+});
+
+app.delete('/api/admin/stops/:id', requireAuth, (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        db.prepare('DELETE FROM stops WHERE id = ?').run(id);
+        const stops = db.prepare('SELECT * FROM stops ORDER BY sort_order ASC, id DESC').all();
+        res.json({ success: true, message: 'Przystanek i powiązane ceny zostały usunięte.', stops });
+    } catch (error) {
+        res.status(500).json({ error: 'Błąd podczas usuwania przystanku.' });
+    }
+});
+
+app.post('/api/admin/pricing', requireAuth, (req, res) => {
+    const { stop1_id, stop2_id, price_s, price_m, price_md } = req.body;
+    
+    // Zawsze zapisuj stop1_id jako mniejszą wartość, aby zapewnić dwukierunkowość relacji
+    const id1 = Math.min(stop1_id, stop2_id);
+    const id2 = Math.max(stop1_id, stop2_id);
+    
+    if (id1 === id2) return res.status(400).json({ error: 'Przystanek początkowy i końcowy muszą być różne.' });
+
+    try {
+        db.prepare(`
+            INSERT INTO pricing (stop1_id, stop2_id, price_s, price_m, price_md) 
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(stop1_id, stop2_id) DO UPDATE SET 
+                price_s=excluded.price_s, 
+                price_m=excluded.price_m, 
+                price_md=excluded.price_md
+        `).run(id1, id2, price_s, price_m, price_md);
+        
+        const prices = db.prepare('SELECT * FROM pricing').all();
+        res.json({ success: true, message: 'Cennik zaktualizowany.', prices });
+    } catch (error) {
+        console.error("Błąd bazy danych (admin-pricing):", error);
+        res.status(500).json({ error: 'Błąd podczas zapisywania cennika.' });
     }
 });
 

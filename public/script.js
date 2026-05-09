@@ -7,6 +7,8 @@ const noteDescriptions = {
 };
 
 let currentScheduleData = null;
+let allStopsClient = [];
+let allPricesClient = [];
 
 // Helper: current day type
 function getDayType(date) {
@@ -221,6 +223,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch dynamic content
     fetchSchedule();
     fetchNews();
+    if (document.getElementById('items-from')) {
+        fetchPricingData();
+    }
 
     // Update time displays every minute
     setInterval(updateDisplays, 60000);
@@ -306,21 +311,15 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedDiv.addEventListener('click', function(e) {
             e.stopPropagation();
             closeAllSelect(this);
-            this.nextElementSibling.classList.toggle('select-hide');
+            const itemsDiv = this.nextElementSibling;
+            itemsDiv.classList.toggle('select-hide');
             this.classList.toggle('select-arrow-active');
-        });
-
-        // Click on an item sets the value
-        items.forEach(item => {
-            item.addEventListener('click', function() {
-                // Update text
-                selectedDiv.innerHTML = this.innerHTML;
-                // Update hidden input
-                targetInput.value = this.dataset.value;
-                // Trigger change event for calculator
-                targetInput.dispatchEvent(new Event('change'));
-                selectedDiv.click(); // Close
-            });
+            
+            // Focus search if opening
+            if (!itemsDiv.classList.contains('select-hide')) {
+                const searchInput = itemsDiv.querySelector('.select-search');
+                if (searchInput) searchInput.focus();
+            }
         });
     });
 
@@ -338,20 +337,74 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', closeAllSelect);
     // ----------------------------------------
 
-    // Cennik Matrix (symmetric paths)
-    // For logic purposes, 'harbutowice' and 'sulkowice' map to same prices
-    function getNormalizedStation(station) {
-        if (station === 'harbutowice') return 'sulkowice';
-        return station;
+    async function fetchPricingData() {
+        try {
+            const res = await fetch('/api/pricing-data');
+            const data = await res.json();
+            allStopsClient = data.stops;
+            allPricesClient = data.prices;
+            populateCalculatorStops();
+        } catch (e) {
+            console.error("Failed to load pricing data", e);
+        }
     }
 
-    const prices = {
-        "myslenice-sulkowice": { s: 8.50, m: 340.00, md: 173.40 },
-        "jawornik-sulkowice": { s: 7.50, m: 320.40, md: 163.40 },
-        "rudnik-sulkowice": { s: 7.50, m: 320.40, md: 163.40 },
-        "jawornik-rudnik": { s: 7.50, m: 320.40, md: 163.40 },
-        "jawornik-myslenice": { s: 7.50, m: 300.80, md: 153.40 }
-    };
+    function populateCalculatorStops() {
+        const fromContainer = document.getElementById('items-from');
+        const toContainer = document.getElementById('items-to');
+        if (!fromContainer || !toContainer) return;
+
+        [fromContainer, toContainer].forEach(container => {
+            container.innerHTML = `
+                <div class="select-search-container">
+                    <input type="text" class="select-search" placeholder="Wyszukaj przystanek...">
+                </div>
+                <div class="select-items-list"></div>
+            `;
+            
+            const searchInput = container.querySelector('.select-search');
+            const listContainer = container.querySelector('.select-items-list');
+
+            // Prevent closing when clicking search
+            searchInput.addEventListener('click', (e) => e.stopPropagation());
+            
+            // Search logic
+            searchInput.addEventListener('input', function() {
+                const filter = this.value.toLowerCase();
+                const items = listContainer.querySelectorAll('.stop-option');
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+
+            allStopsClient.forEach(stop => {
+                const div = document.createElement('div');
+                div.className = 'stop-option';
+                div.dataset.value = stop.id;
+                div.textContent = stop.name;
+                div.addEventListener('click', function() {
+                    const selectContainer = this.closest('.custom-select');
+                    const selectedDiv = selectContainer.querySelector('.select-selected');
+                    const targetInput = document.getElementById(selectContainer.dataset.target);
+                    
+                    selectedDiv.innerHTML = this.innerHTML;
+                    targetInput.value = this.dataset.value;
+                    targetInput.dispatchEvent(new Event('change'));
+                    
+                    // Close the dropdown after selection
+                    const itemsDiv = selectContainer.querySelector('.select-items');
+                    itemsDiv.classList.add('select-hide');
+                    selectedDiv.classList.remove('select-arrow-active');
+                    
+                    // Reset search
+                    searchInput.value = '';
+                    listContainer.querySelectorAll('.stop-option').forEach(opt => opt.style.display = '');
+                });
+                listContainer.appendChild(div);
+            });
+        });
+    }
 
     function calculatePrice() {
         if (!calcFrom.value || !calcTo.value) return;
@@ -363,29 +416,27 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const point1 = getNormalizedStation(calcFrom.value);
-        const point2 = getNormalizedStation(calcTo.value);
+        const id1 = parseInt(calcFrom.value);
+        const id2 = parseInt(calcTo.value);
+        const stop1 = Math.min(id1, id2);
+        const stop2 = Math.max(id1, id2);
 
-        // Sorting alphabetically allows us to check dictionary both ways
-        const routeId = [point1, point2].sort().join('-');
-        
-        const price = prices[routeId];
+        const price = allPricesClient.find(p => p.stop1_id === stop1 && p.stop2_id === stop2);
 
         if (price) {
-            priceSingle.textContent = price.s.toFixed(2).replace('.', ',') + ' zł';
-            priceMonthly.textContent = price.m.toFixed(2).replace('.', ',') + ' zł';
+            priceSingle.textContent = price.price_s.toFixed(2).replace('.', ',') + ' zł';
+            priceMonthly.textContent = (price.price_m || 0).toFixed(2).replace('.', ',') + ' zł';
             
             const discountSpan = document.getElementById('price-monthly-discount');
             if (discountSpan) {
-                discountSpan.textContent = price.md.toFixed(2).replace('.', ',') + ' zł';
+                discountSpan.textContent = (price.price_md || 0).toFixed(2).replace('.', ',') + ' zł';
             }
             
             calcWarning.classList.add('hidden');
             calcResults.classList.remove('hidden');
         } else {
-            // Missing explicit route
             calcResults.classList.add('hidden');
-            calcWarning.textContent = "Skontaktuj się z kierowcą by dopytać o tę relację.";
+            calcWarning.innerHTML = "Ta relacja nie została uzupełniona. Skontaktuj się z nami <a href='/kontakt.html' style='color: inherit; text-decoration: underline;'>tutaj</a>.";
             calcWarning.classList.remove('hidden');
         }
     }
