@@ -233,7 +233,7 @@ app.put('/api/admin/news/:id', requireAuth, (req, res) => {
 app.post('/api/admin/stops', requireAuth, (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'Nazwa przystanku jest wymagana.' });
-    
+
     try {
         // Nowe przystanki mają domyślnie sort_order = 0, będą na początku przy ORDER BY sort_order ASC, id DESC
         db.prepare('INSERT INTO stops (name) VALUES (?)').run(name);
@@ -252,7 +252,7 @@ app.post('/api/admin/stops/reorder', requireAuth, (req, res) => {
     if (!Array.isArray(orders)) return res.status(400).json({ error: 'Nieprawidłowe dane.' });
 
     const updateStmt = db.prepare('UPDATE stops SET sort_order = ? WHERE id = ?');
-    
+
     try {
         const transaction = db.transaction((data) => {
             for (const item of data) {
@@ -280,11 +280,11 @@ app.delete('/api/admin/stops/:id', requireAuth, (req, res) => {
 
 app.post('/api/admin/pricing', requireAuth, (req, res) => {
     const { stop1_id, stop2_id, price_s, price_m, price_md } = req.body;
-    
+
     // Zawsze zapisuj stop1_id jako mniejszą wartość, aby zapewnić dwukierunkowość relacji
     const id1 = Math.min(stop1_id, stop2_id);
     const id2 = Math.max(stop1_id, stop2_id);
-    
+
     if (id1 === id2) return res.status(400).json({ error: 'Przystanek początkowy i końcowy muszą być różne.' });
 
     try {
@@ -296,7 +296,7 @@ app.post('/api/admin/pricing', requireAuth, (req, res) => {
                 price_m=excluded.price_m, 
                 price_md=excluded.price_md
         `).run(id1, id2, price_s, price_m, price_md);
-        
+
         const prices = db.prepare('SELECT * FROM pricing').all();
         res.json({ success: true, message: 'Cennik zaktualizowany.', prices });
     } catch (error) {
