@@ -3,7 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingNewsId = null;
     let allStops = [];
     let allPrices = [];
-    
+    let allFaqs = [];
+    let editingFaqId = null;
+
     // Initialize Quill Editor
     var quill = new Quill('#news-editor', {
         theme: 'snow',
@@ -13,12 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 ['bold', 'italic', 'underline'],
                 [{ 'header': [1, 2, 3, false] }],
                 [{ 'size': ['small', false, 'large', 'huge'] }],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
                 ['clean']
             ]
         }
     });
-    
+
     // Check Auth Status
     checkAuth();
 
@@ -30,26 +32,26 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             tabBtns.forEach(b => b.classList.remove('active'));
             tabContents.forEach(c => c.classList.remove('active'));
-            
+
             btn.classList.add('active');
             document.getElementById(btn.dataset.tab).classList.add('active');
         });
     });
 
-    function showStatus(msg, type='success') {
+    function showStatus(msg, type = 'success') {
         const container = document.getElementById('notification-container');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        
+
         const icon = type === 'success' ? '✅' : '⚠️';
-        
+
         toast.innerHTML = `
             <span class="toast-icon">${icon}</span>
             <span class="toast-message">${msg}</span>
         `;
-        
+
         container.appendChild(toast);
-        
+
         // Console reporting
         if (type === 'success') {
             console.log(`%c[ADMIN SUCCESS] ${msg}`, 'color: #10b981; font-weight: bold;');
@@ -76,12 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadAdminNews();
                 loadAdminSchedule();
                 loadPricingData();
+                loadFaqData();
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
                 document.getElementById('admin-header-main').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'none';
             }
-        } catch(e) {
+        } catch (e) {
             console.error("Auth check failed", e);
         }
     }
@@ -90,10 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch('/api/schedule');
             fullScheduleData = await res.json();
-            if(Object.keys(fullScheduleData).length === 0) {
+            if (Object.keys(fullScheduleData).length === 0) {
                 fullScheduleData = { myslenice: { workdays: [], saturday: [], sunday: [] }, sulkowice: { workdays: [], saturday: [], sunday: [] } };
             }
-        } catch(e) {
+        } catch (e) {
             console.error(e);
         }
     }
@@ -103,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
-        
+
         try {
             const res = await fetch('/api/login', {
                 method: 'POST',
@@ -111,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ username, password })
             });
             const data = await res.json();
-            
+
             if (data.success) {
                 document.getElementById('username').value = '';
                 document.getElementById('password').value = '';
@@ -121,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alertEl.textContent = data.message;
                 alertEl.className = 'alert error';
             }
-        } catch(err) {
+        } catch (err) {
             console.error(err);
         }
     });
@@ -195,11 +198,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSaveSchedule = document.getElementById('save-schedule-btn');
 
     function renderScheduleTable(city, dayType) {
-        if(!fullScheduleData || !fullScheduleData[city]) return;
-        
+        if (!fullScheduleData || !fullScheduleData[city]) return;
+
         let courses = fullScheduleData[city][dayType] || [];
         containerSchedule.innerHTML = '';
-        
+
         courses.forEach((course) => {
             containerSchedule.appendChild(createScheduleRow(course.time, course.notes));
         });
@@ -211,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createScheduleRow(time = "12:00", notes = []) {
         const div = document.createElement('div');
         div.className = 'schedule-row';
-        
+
         const isS = notes.includes('S');
         const isRD = notes.includes('RD');
         const isH = notes.includes('H');
@@ -241,17 +244,17 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSaveSchedule.addEventListener('click', async () => {
         const city = document.getElementById('schedule-city-select').value;
         const dayType = document.getElementById('schedule-day-select').value;
-        
+
         const rows = document.querySelectorAll('.schedule-row');
         let newCourses = [];
-        
+
         rows.forEach(row => {
             const time = row.querySelector('.row-time').value;
             let notes = [];
-            if(row.querySelector('.row-h').checked) notes.push('H');
-            if(row.querySelector('.row-s').checked) notes.push('S');
-            if(row.querySelector('.row-rd').checked) notes.push('RD');
-            
+            if (row.querySelector('.row-h').checked) notes.push('H');
+            if (row.querySelector('.row-s').checked) notes.push('S');
+            if (row.querySelector('.row-rd').checked) notes.push('RD');
+
             newCourses.push({ time, notes });
         });
 
@@ -276,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 showStatus(data.error || 'Błąd', 'error');
             }
-        } catch(err) {
+        } catch (err) {
             showStatus('Błąd sieci/Zapisywania', 'error');
         }
     });
@@ -295,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         previewTitle.textContent = titleInput.value || 'Tytuł ogłoszenia';
     });
 
-    quill.on('text-change', function() {
+    quill.on('text-change', function () {
         const html = quill.root.innerHTML;
         if (quill.getText().trim() === '') {
             previewContent.innerHTML = 'Twój sformatowany tekst pojawi się tutaj...';
@@ -307,12 +310,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // News Submit (Add / Edit)
     document.getElementById('news-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if(!title || title.trim() === '') {
+        if (!title || title.trim() === '') {
             showStatus('Nie można opublikować: Brakuje tytułu aktualności!', 'error');
             return;
         }
 
-        if(quill.getText().trim() === '') {
+        if (quill.getText().trim() === '') {
             showStatus('Nie można opublikować: Treść wiadomości nie może być pusta.', 'error');
             return;
         }
@@ -335,14 +338,14 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 showStatus(data.error || 'Błąd podczas zapisywania aktualności.', 'error');
             }
-        } catch(err) {
-             showStatus('Błąd sieci/serwera podczas publikacji.', 'error');
-             console.error("News saving error:", err);
+        } catch (err) {
+            showStatus('Błąd sieci/serwera podczas publikacji.', 'error');
+            console.error("News saving error:", err);
         }
     });
 
     const formBtn = document.querySelector('#news-form button[type="submit"]');
-    
+
     // Anuluj edycję logic
     const cancelEditBtn = document.createElement('button');
     cancelEditBtn.type = 'button';
@@ -359,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
         quill.root.innerHTML = '';
         formBtn.textContent = 'Zapisz Publikację';
         cancelEditBtn.style.display = 'none';
-        
+
         // Trigger live preview reset
         document.getElementById('news-title').dispatchEvent(new Event('input'));
     };
@@ -368,21 +371,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.editNews = (id) => {
         fetch('/api/news')
-        .then(res => res.json())
-        .then(allNews => {
-            const newsItem = allNews.find(n => n.id === id);
-            if (newsItem) {
-                editingNewsId = id;
-                document.getElementById('news-title').value = newsItem.title;
-                quill.root.innerHTML = newsItem.content;
-                formBtn.textContent = 'Zapisz zmiany (Edycja)';
-                cancelEditBtn.style.display = 'inline-block';
-                document.getElementById('news-title').dispatchEvent(new Event('input'));
-                
-                // Scroll up smoothly
-                document.querySelector('.admin-container').scrollIntoView({ behavior: 'smooth' });
-            }
-        });
+            .then(res => res.json())
+            .then(allNews => {
+                const newsItem = allNews.find(n => n.id === id);
+                if (newsItem) {
+                    editingNewsId = id;
+                    document.getElementById('news-title').value = newsItem.title;
+                    quill.root.innerHTML = newsItem.content;
+                    formBtn.textContent = 'Zapisz zmiany (Edycja)';
+                    cancelEditBtn.style.display = 'inline-block';
+                    document.getElementById('news-title').dispatchEvent(new Event('input'));
+
+                    // Scroll up smoothly
+                    document.querySelector('.admin-container').scrollIntoView({ behavior: 'smooth' });
+                }
+            });
     };
 
     async function loadAdminNews() {
@@ -390,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/news');
             const data = await res.json();
             renderNewsList(data);
-        } catch(e) {}
+        } catch (e) { }
     }
 
     function renderNewsList(newsList) {
@@ -423,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.delete-news-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                if(confirm('Na pewno usunąć ten komunikat?')) {
+                if (confirm('Na pewno usunąć ten komunikat?')) {
                     const id = e.target.dataset.id;
                     await deleteNews(id);
                 }
@@ -437,13 +440,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'DELETE'
             });
             const data = await res.json();
-            if(res.ok) {
+            if (res.ok) {
                 showStatus('Aktualność została pomyślnie usunięta.', 'success');
                 renderNewsList(data.news);
             } else {
                 showStatus(data.error || 'Błąd podczas usuwania aktualności.', 'error');
             }
-        } catch(err) {
+        } catch (err) {
             showStatus('Błąd połączenia podczas usuwania aktualności.', 'error');
             console.error("News deletion error:", err);
         }
@@ -475,13 +478,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const div = document.createElement('div');
             div.className = 'stop-item';
             div.dataset.id = stop.id;
-            div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 6px; background: #f8fafc;';
             div.innerHTML = `
-                <div style="display: flex; align-items: center;">
-                    <span class="drag-handle">☰</span>
-                    <span>${stop.name}</span>
+                <div class="drag-handle" title="Przeciągnij, aby zmienić kolejność">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; opacity: 0.5;"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
                 </div>
-                <button class="btn-danger" style="padding: 4px 8px; font-size: 0.8rem;" onclick="deleteStop(${stop.id})">Usuń</button>
+                <div class="stop-name">${stop.name}</div>
+                <div class="stop-actions">
+                    <button class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem; background: #64748b;" onclick="editStop(${stop.id}, '${stop.name.replace(/'/g, "\\'")}')">Edytuj</button>
+                    <button class="btn-danger" style="padding: 8px 16px; font-size: 0.85rem;" onclick="deleteStop(${stop.id})">Usuń</button>
+                </div>
             `;
             container.appendChild(div);
         });
@@ -491,7 +496,9 @@ document.addEventListener('DOMContentLoaded', () => {
             animation: 150,
             handle: '.drag-handle',
             ghostClass: 'sortable-ghost',
-            onEnd: function() {
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            onEnd: function () {
                 saveReorder();
             }
         });
@@ -511,13 +518,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ orders })
             });
             if (res.ok) {
+                showStatus('Kolejność przystanków została zapisana.', 'success');
                 // Refresh local data to match server sort
                 const data = await fetch('/api/pricing-data').then(r => r.json());
                 allStops = data.stops;
                 populatePriceDropdowns();
+            } else {
+                showStatus('Błąd podczas zapisywania kolejności.', 'error');
             }
-        } catch (e) { console.error("Reorder failed", e); }
+        } catch (e) {
+            showStatus('Błąd połączenia przy zapisywaniu kolejności.', 'error');
+            console.error("Reorder failed", e);
+        }
     }
+
+    window.editStop = async (id, currentName) => {
+        const newName = prompt('Wpisz nową nazwę przystanku:', currentName);
+        if (newName === null || newName.trim() === '' || newName === currentName) return;
+
+        try {
+            const res = await fetch(`/api/admin/stops/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName.trim() })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                allStops = data.stops;
+                showStatus('Nazwa przystanku została zaktualizowana.', 'success');
+                renderStopsList();
+                populatePriceDropdowns();
+            } else {
+                showStatus(data.error || 'Błąd podczas edycji przystanku.', 'error');
+            }
+        } catch (e) {
+            showStatus('Błąd połączenia podczas edycji przystanku.', 'error');
+            console.error("Edit stop error:", e);
+        }
+    };
 
     window.deleteStop = async (id) => {
         if (!confirm('Na pewno usunąć ten przystanek? Spowoduje to również usunięcie wszystkich powiązanych cen!')) return;
@@ -531,8 +569,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 showStatus('Błąd podczas usuwania przystanku.', 'error');
             }
-        } catch (e) { 
-            showStatus('Krytyczny błąd podczas usuwania przystanku.', 'error'); 
+        } catch (e) {
+            showStatus('Krytyczny błąd podczas usuwania przystanku.', 'error');
             console.error("Stop deletion error:", e);
         }
     };
@@ -556,11 +594,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('new-stop-name').value = '';
                 showStatus(`Przystanek "${name}" został dodany.`, 'success');
                 loadPricingData();
-            } else { 
-                showStatus(data.error || 'Błąd dodawania przystanku.', 'error'); 
+            } else {
+                showStatus(data.error || 'Błąd dodawania przystanku.', 'error');
             }
-        } catch (e) { 
-            showStatus('Błąd połączenia przy dodawaniu przystanku.', 'error'); 
+        } catch (e) {
+            showStatus('Błąd połączenia przy dodawaniu przystanku.', 'error');
             console.error("Add stop error:", e);
         }
     });
@@ -581,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (prevA) selectA.value = prevA;
         if (prevB) selectB.value = prevB;
-        
+
         updatePriceForm();
     }
 
@@ -589,7 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const id1 = parseInt(document.getElementById('price-stop-a').value);
         const selectB = document.getElementById('price-stop-b');
         const id2 = parseInt(selectB.value);
-        
+
         // Reset inputs
         document.getElementById('price-s').value = '';
         document.getElementById('price-m').value = '';
@@ -612,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const stop1 = Math.min(id1, bId);
             const stop2 = Math.max(id1, bId);
             const hasPrice = allPrices.some(p => p.stop1_id === stop1 && p.stop2_id === stop2);
-            
+
             opt.style.color = hasPrice ? '' : '#ef4444'; // Red if no price
             if (!hasPrice) {
                 opt.text = opt.text.replace(' (brak ceny)', '') + ' (brak ceny)';
@@ -673,9 +711,153 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 showStatus(data.error || 'Błąd podczas zapisywania ceny.', 'error');
             }
-        } catch (e) { 
-            showStatus('Błąd połączenia podczas zapisywania ceny.', 'error'); 
+        } catch (e) {
+            showStatus('Błąd połączenia podczas zapisywania ceny.', 'error');
             console.error("Price save error:", e);
         }
     });
+
+    // --- FAQ LOGIC ---
+    async function loadFaqData() {
+        try {
+            const res = await fetch('/api/faq');
+            allFaqs = await res.json();
+            renderFaqList();
+        } catch (e) {
+            console.error("Failed to load FAQ data", e);
+        }
+    }
+
+    function renderFaqList() {
+        const container = document.getElementById('faq-list-container');
+        container.innerHTML = '';
+        if (allFaqs.length === 0) {
+            container.innerHTML = '<p style="color: #64748b; font-size: 0.9rem;">Brak pytań FAQ.</p>';
+            return;
+        }
+
+        allFaqs.forEach(faq => {
+            const div = document.createElement('div');
+            div.className = 'faq-admin-item';
+            div.dataset.id = faq.id;
+            div.innerHTML = `
+                <div class="faq-admin-drag" title="Przeciągnij, aby zmienić kolejność">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; opacity: 0.5;"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+                </div>
+                <div class="faq-admin-content">
+                    <div class="faq-admin-question">${faq.question}</div>
+                    <div class="faq-admin-answer">${faq.answer.replace(/<[^>]*>?/gm, '')}</div>
+                </div>
+                <div class="faq-admin-actions">
+                    <button class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem; background: #64748b;" onclick="editFaq(${faq.id})">Edytuj</button>
+                    <button class="btn-danger" style="padding: 8px 16px; font-size: 0.85rem;" onclick="deleteFaq(${faq.id})">Usuń</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        new Sortable(container, {
+            animation: 150,
+            handle: '.faq-admin-drag',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            onEnd: async function () {
+                const items = container.querySelectorAll('.faq-admin-item');
+                const orders = Array.from(items).map((item, index) => ({
+                    id: parseInt(item.dataset.id),
+                    sort_order: index
+                }));
+
+                try {
+                    await fetch('/api/admin/faq/reorder', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orders })
+                    });
+                    showStatus('Kolejność FAQ została zapisana.', 'success');
+                } catch (e) {
+                    showStatus('Błąd połączenia przy zapisywaniu kolejności FAQ.', 'error');
+                }
+            }
+        });
+    }
+
+    document.getElementById('faq-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const question = document.getElementById('faq-question').value.trim();
+        const answer = document.getElementById('faq-answer').value.trim();
+
+        if (!question || !answer) return;
+
+        const url = editingFaqId ? `/api/admin/faq/${editingFaqId}` : '/api/admin/faq';
+        const method = editingFaqId ? 'PUT' : 'POST';
+
+        try {
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, answer })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                allFaqs = data.faqs;
+                showStatus(editingFaqId ? 'Pytanie FAQ zostało zaktualizowane.' : 'Nowe pytanie FAQ zostało dodane.', 'success');
+                resetFaqForm();
+                renderFaqList();
+            } else {
+                showStatus(data.error || 'Błąd zapisu FAQ.', 'error');
+            }
+        } catch (e) {
+            showStatus('Błąd połączenia przy zapisywaniu FAQ.', 'error');
+        }
+    });
+
+    function resetFaqForm() {
+        editingFaqId = null;
+        document.getElementById('faq-question').value = '';
+        document.getElementById('faq-answer').value = '';
+        document.getElementById('faq-save-btn').textContent = 'Zapisz Pytanie FAQ';
+
+        const cancelBtn = document.getElementById('faq-cancel-edit');
+        if (cancelBtn) cancelBtn.remove();
+    }
+
+    window.editFaq = (id) => {
+        const faq = allFaqs.find(f => f.id === id);
+        if (!faq) return;
+
+        editingFaqId = id;
+        document.getElementById('faq-question').value = faq.question;
+        document.getElementById('faq-answer').value = faq.answer;
+        document.getElementById('faq-save-btn').textContent = 'Zapisz zmiany w FAQ';
+
+        if (!document.getElementById('faq-cancel-edit')) {
+            const cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.id = 'faq-cancel-edit';
+            cancelBtn.className = 'btn-danger';
+            cancelBtn.style.cssText = 'padding: 12px 24px; margin-left: 10px;';
+            cancelBtn.textContent = 'Anuluj';
+            cancelBtn.onclick = resetFaqForm;
+            document.getElementById('faq-save-btn').parentNode.appendChild(cancelBtn);
+        }
+
+        document.getElementById('tab-faq').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.deleteFaq = async (id) => {
+        if (!confirm('Na pewno usunąć to pytanie FAQ?')) return;
+        try {
+            const res = await fetch(`/api/admin/faq/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (res.ok) {
+                allFaqs = data.faqs;
+                showStatus('Pytanie FAQ zostało usunięte.', 'success');
+                renderFaqList();
+            }
+        } catch (e) {
+            showStatus('Błąd połączenia podczas usuwania FAQ.', 'error');
+        }
+    };
 });

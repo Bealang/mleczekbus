@@ -223,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch dynamic content
     fetchSchedule();
     fetchNews();
+    fetchFaqs();
     if (document.getElementById('items-from')) {
         fetchPricingData();
     }
@@ -458,5 +459,110 @@ document.addEventListener('DOMContentLoaded', () => {
                 mainNav.classList.remove('navbar-scrolled');
             }
         });
+    }
+
+    // FAQ Accordion Logic (Single Open)
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+        item.addEventListener('toggle', (e) => {
+            if (item.open) {
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item && otherItem.open) {
+                        otherItem.open = false;
+                    }
+                });
+            }
+        });
+    });
+
+    async function fetchFaqs() {
+        try {
+            const res = await fetch('/api/faq');
+            const data = await res.json();
+            renderFaqs(data);
+        } catch (e) {
+            console.error("Error fetching FAQs:", e);
+            const container = document.getElementById('faq-dynamic-container');
+            if (container) container.innerHTML = '<p class="text-center">Błąd ładowania pytań.</p>';
+        }
+    }
+
+    function renderFaqs(faqs) {
+        const container = document.getElementById('faq-dynamic-container');
+        if (!container) return;
+
+        if (faqs.length === 0) {
+            container.innerHTML = '<p class="text-center">Brak pytań FAQ.</p>';
+            return;
+        }
+
+        container.innerHTML = faqs.map(faq => `
+            <details class="faq-item">
+                <summary>
+                    <h3>${faq.question}</h3>
+                    <div class="faq-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </summary>
+                <div class="faq-content">
+                    <p>${faq.answer}</p>
+                </div>
+            </details>
+        `).join('');
+
+        // Smooth Accordion Animation Logic
+        const faqItems = container.querySelectorAll('.faq-item');
+        faqItems.forEach(el => {
+            const summary = el.querySelector('summary');
+            const content = el.querySelector('.faq-content');
+
+            summary.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (el.open) {
+                    closeItem(el, content);
+                } else {
+                    // Close others
+                    faqItems.forEach(item => {
+                        if (item.open && item !== el) {
+                            closeItem(item, item.querySelector('.faq-content'));
+                        }
+                    });
+                    openItem(el, content);
+                }
+            });
+        });
+
+        function openItem(el, content) {
+            el.style.height = el.offsetHeight + 'px';
+            el.open = true;
+            const startHeight = el.offsetHeight;
+            const endHeight = startHeight + content.offsetHeight;
+
+            el.animate([
+                { height: startHeight + 'px' },
+                { height: endHeight + 'px' }
+            ], {
+                duration: 300,
+                easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+            }).onfinish = () => el.style.height = 'auto';
+        }
+
+        function closeItem(el, content) {
+            const startHeight = el.offsetHeight;
+            const endHeight = startHeight - content.offsetHeight;
+
+            const anim = el.animate([
+                { height: startHeight + 'px' },
+                { height: endHeight + 'px' }
+            ], {
+                duration: 300,
+                easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+            });
+
+            anim.onfinish = () => {
+                el.open = false;
+                el.style.height = 'auto';
+            };
+        }
     }
 });

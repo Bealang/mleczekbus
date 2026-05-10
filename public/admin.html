@@ -13,459 +13,7 @@
         rel="stylesheet">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <style>
-        :root {
-            --admin-bg: #ffffff;
-            --admin-surface: #ffffff;
-            --admin-border: #e5e7eb;
-            --admin-primary: #0f172a;
-            --admin-accent: #eab308;
-            --admin-text: #1f2937;
-            --admin-text-light: #6b7280;
-            --radius-box: 0;
-            --radius-btn: 0;
-            --shadow-soft: none;
-            --shadow-hover: none;
-        }
-
-        body {
-            background-color: var(--admin-bg);
-            font-family: 'Outfit', sans-serif;
-            color: var(--admin-text);
-            margin: 0;
-            padding: 0;
-        }
-
-        .admin-header {
-            background: var(--admin-primary);
-            color: white;
-            padding: 20px 0;
-            box-shadow: var(--shadow-soft);
-        }
-
-        .admin-header-content {
-            max-width: 1000px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-
-        .admin-container {
-            max-width: 1000px;
-            margin: 40px auto;
-            background: var(--admin-surface);
-            padding: 40px;
-            border-radius: var(--radius-box);
-            box-shadow: var(--shadow-soft);
-            border: 1px solid var(--admin-border);
-        }
-
-        h2,
-        h3 {
-            color: var(--admin-primary);
-            margin-top: 0;
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: var(--admin-text);
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1.5px solid var(--admin-border);
-            border-radius: var(--radius-btn);
-            font-family: inherit;
-            font-size: 1rem;
-            background: #f8fafc;
-            transition: all 0.2s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--admin-accent);
-            background: white;
-            box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
-        }
-
-        /* Modern Tabs */
-        .tab-buttons {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 30px;
-            background: #f1f5f9;
-            padding: 6px;
-            border-radius: var(--radius-box);
-            overflow-x: auto;
-        }
-
-        .tab-btn {
-            background: transparent;
-            border: none;
-            padding: 12px 24px;
-            border-radius: var(--radius-btn);
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--admin-text-light);
-            transition: all 0.2s ease;
-            flex: 1;
-            text-align: center;
-        }
-
-        .tab-btn:hover {
-            background: #e2e8f0;
-            color: var(--admin-text);
-        }
-
-        .tab-btn.active {
-            background: white;
-            color: var(--admin-primary);
-            box-shadow: var(--shadow-soft);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-
-
-        .btn-primary {
-            background: var(--admin-primary);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: var(--radius-btn);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-
-        .btn-primary:hover {
-            background: #1e293b;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-soft);
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: var(--radius-btn);
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        .news-list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border: 1px solid var(--admin-border);
-            border-radius: var(--radius-btn);
-            margin-bottom: 10px;
-            background: #f8fafc;
-            transition: all 0.2s;
-        }
-
-        .news-list-item:hover {
-            background: white;
-            border-color: #cbd5e1;
-            box-shadow: var(--shadow-soft);
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: var(--radius-btn);
-            margin-bottom: 20px;
-            display: none;
-            font-weight: 500;
-        }
-
-        .alert.success {
-            background: #dcfce7;
-            color: #166534;
-            display: block;
-            border: 1px solid #bbf7d0;
-        }
-
-        .alert.error {
-            background: #fee2e2;
-            color: #991b1b;
-            display: block;
-            border: 1px solid #fecaca;
-        }
-
-        .login-screen-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(rgba(11, 31, 56, 0.75), rgba(26, 54, 93, 0.75)), url('bus.png');
-            background-size: cover;
-            background-position: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-        }
-
-        .login-card {
-            background: rgba(11, 31, 56, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0;
-            padding: 50px 40px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            color: #fff;
-        }
-
-        .login-logo h1 {
-            color: #fff;
-            font-size: 2.2rem;
-            margin: 0 0 5px 0;
-            font-family: 'Roboto Condensed', sans-serif;
-            letter-spacing: 1px;
-        }
-
-        .login-logo h1 span {
-            color: var(--admin-accent);
-        }
-
-        .login-logo p {
-            color: #94a3b8;
-            margin-bottom: 30px;
-            font-size: 0.95rem;
-        }
-
-        .login-card .form-group input {
-            background: rgba(0, 0, 0, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: #fff !important;
-            border-radius: 0;
-            padding: 14px 20px;
-            transition: all 0.3s;
-        }
-
-        .login-card .form-group input::placeholder {
-            color: #64748b;
-        }
-
-        .login-card .form-group input:focus {
-            background: rgba(0, 0, 0, 0.4) !important;
-            border-color: var(--admin-accent) !important;
-            box-shadow: none !important;
-        }
-
-        .login-btn {
-            background: var(--accent-color);
-            color: var(--primary-color);
-            font-weight: 700;
-            width: 100%;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 0;
-            font-size: 1.05rem;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .login-btn:hover {
-            background: #facc15;
-        }
-
-        #admin-panel,
-        #admin-header-main {
-            display: none;
-        }
-
-        .btn-logout {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: var(--radius-btn);
-            cursor: pointer;
-            font-weight: 600;
-            font-family: inherit;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .btn-logout:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
-        }
-
-        .header-logout {
-            background: #ef4444;
-            border: 1px solid #ef4444;
-        }
-
-        .header-logout:hover {
-            background: #dc2626;
-            border-color: #dc2626;
-        }
-
-        .ql-toolbar.ql-snow {
-            border-top-left-radius: var(--radius-btn);
-            border-top-right-radius: var(--radius-btn);
-            background: #f8fafc;
-            border-color: var(--admin-border);
-        }
-
-        .ql-container.ql-snow {
-            border-bottom-left-radius: var(--radius-btn);
-            border-bottom-right-radius: var(--radius-btn);
-            border-color: var(--admin-border);
-            font-family: inherit;
-            font-size: 1rem;
-        }
-
-        .preview-resizable {
-            resize: both;
-            overflow: auto;
-            border: 2px dashed #cbd5e1;
-            padding: 10px;
-            border-radius: var(--radius-btn);
-            background: #f8fafc;
-            min-height: 250px;
-            margin-bottom: 20px;
-            max-width: 100%;
-        }
-
-        .schedule-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 8px;
-            background: white;
-            padding: 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-        }
-
-        @media (max-width: 768px) {
-            .admin-container {
-                margin: 20px 10px;
-                padding: 20px;
-            }
-
-            .admin-header-content {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .tab-buttons {
-                flex-direction: column;
-            }
-
-            .news-list-item {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 15px;
-            }
-
-            .news-list-item>div:last-child {
-                display: flex;
-                flex-direction: column;
-            }
-
-            .news-list-item button {
-                width: 100%;
-            }
-
-            .schedule-row {
-                flex-wrap: wrap;
-            }
-
-            .schedule-row input[type="time"] {
-                flex: 1 1 100%;
-            }
-
-            .schedule-row label {
-                flex: 1 1 calc(50% - 10px);
-            }
-
-            .schedule-row .rm-row {
-                flex: 1 1 100%;
-                margin: 5px 0 0 0 !important;
-            }
-        }
-
-        /* Toast Notifications */
-        #notification-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .toast {
-            padding: 16px 24px;
-            background: rgba(11, 31, 56, 0.85);
-            color: white;
-            backdrop-filter: blur(8px);
-            border-left: 5px solid var(--accent-color);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 300px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            animation: slideIn 0.3s ease-out;
-            font-weight: 500;
-        }
-
-        .toast.error {
-            border-left-color: #ef4444;
-        }
-
-        .toast-icon {
-            font-size: 1.2rem;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes fadeOut {
-            to { opacity: 0; transform: translateY(-10px); }
-        }
-
-        .toast.hiding {
-            animation: fadeOut 0.5s ease-in forwards;
-        }
-    </style>
+    <link rel="stylesheet" href="admin.css">
 </head>
 
 <body>
@@ -513,10 +61,11 @@
     <div class="admin-container" id="admin-panel">
 
         <div class="tab-buttons">
-            <button class="tab-btn active" data-tab="tab-files">Zarządzanie Plikami</button>
-            <button class="tab-btn" data-tab="tab-schedule-builder">Edytor Godzin (Silnik)</button>
+            <button class="tab-btn active" data-tab="tab-files">Pliki</button>
+            <button class="tab-btn" data-tab="tab-schedule-builder">Rozkład Jazdy</button>
             <button class="tab-btn" data-tab="tab-pricing">Cennik</button>
             <button class="tab-btn" data-tab="tab-news">Aktualności</button>
+            <button class="tab-btn" data-tab="tab-faq">FAQ</button>
         </div>
 
         <div id="notification-container"></div>
@@ -525,37 +74,42 @@
         <div id="tab-files" class="tab-content active">
             <div
                 style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border); margin-bottom: 20px;">
-                <h3>Aktualizacja pliku graficznego rozkładu</h3>
-                <p style="margin-bottom: 20px; color: var(--text-secondary);">Wgrany plik zastąpi dotychczasowy
-                    `rozklad.png` i od razu pojawi się na głównej stronie.</p>
+                <h3>Zdjęcie rozkładu</h3>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">Wybierz nową grafikę, która zastąpi obecny
+                    rozkład jazdy na stronie głównej. System automatycznie przetworzy plik do odpowiedniego formatu.
+                    <br>
+                    <strong>Formaty:</strong> PNG, JPG, WEBP, AVIF (maks. 8MB)
+                </p>
                 <form id="upload-form">
                     <div class="form-group">
-                        <input type="file" id="rozklad_image" accept="image/png, image/jpeg" required>
+                        <input type="file" id="rozklad_image" accept="image/png, image/jpeg, image/webp, image/avif"
+                            required>
                     </div>
-                    <button type="submit" class="btn-primary">Wgraj zaktualizowany rozkład</button>
+                    <button type="submit" class="btn-primary">Aktualizuj zdjęcie rozkładu</button>
                 </form>
             </div>
 
             <div
                 style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
-                <h3>Aktualizacja pliku Regulaminu (PDF)</h3>
-                <p style="margin-bottom: 20px; color: var(--text-secondary);">Wgrany dokument zastąpi plik
-                    `regulamin.pdf` w serwisie.</p>
+                <h3>Regulamin</h3>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">Prześlij nową wersję regulaminu przewozów.
+                    <br>
+                    <strong>Format:</strong> PDF (maks. 8MB)
+                </p>
                 <form id="upload-regulamin-form">
                     <div class="form-group">
                         <input type="file" id="regulamin_file" accept="application/pdf" required>
                     </div>
-                    <button type="submit" class="btn-primary">Wgraj zaktualizowany regulamin</button>
+                    <button type="submit" class="btn-primary">Aktualizuj regulamin</button>
                 </form>
             </div>
         </div>
 
         <!-- Edytor Harmonogramu (Silnik JSON) -->
         <div id="tab-schedule-builder" class="tab-content">
-            <h3>Edytor godzin odjazdów (Silnik Strony)</h3>
+            <h3>Edytor rozkładu jazdy</h3>
             <p style="margin-bottom: 20px; color: var(--text-secondary);">Zarządzaj odjazdami, które strona analizuje i
-                wyświetla jako "Najbliższy kurs". Zaznacz odpowiednie atrybuty dla danego kursu (powinno być spiskowane
-                w formacie HH:MM).</p>
+                wyświetla jako "Najbliższy kurs".</p>
 
             <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
                 <select id="schedule-city-select" style="padding: 8px; border-radius: 4px; flex: 1; min-width: 150px;">
@@ -587,10 +141,12 @@
         <div id="tab-pricing" class="tab-content">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
                 <!-- Zarządzanie przystankami -->
-                <div style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                <div
+                    style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
                     <h3>Zarządzanie Przystankami</h3>
                     <form id="add-stop-form" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <input type="text" id="new-stop-name" placeholder="Nazwa przystanku..." style="flex: 1; padding: 8px;">
+                        <input type="text" id="new-stop-name" placeholder="Nazwa przystanku..."
+                            style="flex: 1; padding: 8px;">
                         <button type="submit" class="btn-primary" style="padding: 8px 16px;">Dodaj</button>
                     </form>
                     <div id="stops-list-container" style="max-height: 400px; overflow-y: auto;">
@@ -599,7 +155,8 @@
                 </div>
 
                 <!-- Edytor cen relacji -->
-                <div style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                <div
+                    style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
                     <h3>Edytor Cen Relacji</h3>
                     <div class="form-group">
                         <label>Przystanek A (Bazowy)</label>
@@ -623,7 +180,8 @@
                             <label>Miesięczny ulgowy (zł)</label>
                             <input type="number" step="1" id="price-md" placeholder="np. 140">
                         </div>
-                        <button type="button" id="save-price-btn" class="btn-primary" style="width: 100%;">Zapisz cenę dla tej relacji</button>
+                        <button type="button" id="save-price-btn" class="btn-primary" style="width: 100%;">Zapisz cenę
+                            dla tej relacji</button>
                     </div>
                 </div>
             </div>
@@ -690,6 +248,37 @@
             <h3 style="margin-bottom: 20px;">Zarządzaj opublikowanymi wiadomościami</h3>
             <div id="news-list">
                 <!-- Lista aktualności ładuje się dynamicznie -->
+            </div>
+        </div>
+
+        <!-- Zarządzanie FAQ -->
+        <div id="tab-faq" class="tab-content">
+            <div style="display: flex; flex-direction: column; gap: 30px;">
+                <!-- Formularz dodawania FAQ -->
+                <div style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                    <h3>Zarządzanie FAQ</h3>
+                    <p style="margin-bottom: 20px; color: var(--text-secondary);">Dodaj nowe pytanie i odpowiedź do sekcji FAQ na stronie głównej.</p>
+                    
+                    <form id="faq-form">
+                        <div class="form-group">
+                            <label>Pytanie</label>
+                            <input type="text" id="faq-question" placeholder="np. Gdzie zatrzymują się busy?" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Odpowiedź</label>
+                            <textarea id="faq-answer" rows="4" placeholder="Wprowadź treść odpowiedzi..." required style="width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; font-family: inherit;"></textarea>
+                        </div>
+                        <button type="submit" id="faq-save-btn" class="btn-primary" style="padding: 12px 24px;">Zapisz Pytanie FAQ</button>
+                    </form>
+                </div>
+
+                <!-- Lista pytań FAQ -->
+                <div style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                    <h3>Lista pytań (Przeciągnij, aby zmienić kolejność)</h3>
+                    <div id="faq-list-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                        <!-- Lista FAQ ładuje się dynamicznie -->
+                    </div>
+                </div>
             </div>
         </div>
 

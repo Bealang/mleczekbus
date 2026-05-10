@@ -4,13 +4,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mleczek Bus - Start</title>
+    <title>Mleczek Bus - Busy Sułkowice, Rudnik, Myślenice | Rozkład Jazdy</title>
+    <meta name="description"
+        content="Szukasz busa? Mleczek Bus oferuje regularne przewozy pasażerskie na trasie Myślenice - Sułkowice - Rudnik - Jawornik - Harbutowice. Sprawdź aktualny rozkład jazdy online!">
+    <meta name="keywords"
+        content="Busy Sułkowice, Busy Rudnik, Busy Myślenice, Mleczekbus trasa, rozkład jazdy Myślenice Sułkowice, busy Harbutowice Myślenice">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
+
+    <!-- Schema.org JSON-LD for Local Business and Bus Service -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BusReservationService",
+      "name": "Mleczek Bus",
+      "url": "https://mleczekbus.pl",
+      "logo": "https://mleczekbus.pl/bus.png",
+      "description": "Przewozy osób na trasie Harbutowice - Sułkowice - Rudnik - Jawornik - Myślenice.",
+      "provider": {
+        "@type": "LocalBusiness",
+        "name": "Mleczek Bus",
+        "telephone": "+48501456327",
+        "priceRange": "$",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Sułkowice",
+          "addressRegion": "małopolskie",
+          "addressCountry": "PL"
+        }
+      },
+      "areaServed": [
+        "Harbutowice",
+        "Sułkowice",
+        "Rudnik",
+        "Jawornik",
+        "Myślenice"
+      ]
+    }
+    </script>
 </head>
 
 <body>
@@ -18,7 +53,7 @@
     <nav class="navbar navbar-home" id="main-nav">
         <div class="container nav-container">
             <div class="logo">
-                <h1>MLECZEK<span>BUS</span></h1>
+                <h1 style="margin: 0; font-size: inherit; line-height: 1;">MLECZEK<span>BUS</span></h1>
             </div>
 
             <button class="hamburger" id="hamburger-btn" aria-label="Menu">
@@ -47,8 +82,9 @@
     <!-- Header / Hero section -->
     <header class="hero">
         <div class="container">
-            <h2>Pewnie i na czas do celu.</h2>
-            <p>Sprawdź nasz rozkład jazdy i podróżuj z nami na trasie Myślenice - Sułkowice - Harbutowice.</p>
+            <h2 class="hero-title">Busy Sułkowice - Myślenice<br> Pewnie i na czas.</h2>
+            <p>Sprawdź nasz rozkład jazdy i podróżuj z nami na trasie: <strong>Harbutowice - Sułkowice - Rudnik -
+                    Jawornik - Myślenice</strong>.</p>
             <button class="btn-primary" id="btn-show-modal">Zobacz Pełny Rozkład</button>
         </div>
     </header>
@@ -58,8 +94,10 @@
         <section class="departures-section">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">Najbliższe kursy</h2>
+                    <h2 class="section-title">Najbliższe odjazdy</h2>
                     <div class="title-underline"></div>
+                    <p style="text-align: center; margin-top: 1rem; color: #64748b;">Obsługujemy miejscowości:
+                        Harbutowice, Sułkowice, Rudnik, Jawornik i Myślenice.</p>
                 </div>
 
                 <div class="cards-grid">
@@ -75,8 +113,9 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3>Z Myślenic</h3>
-                                <span class="destination-subtext">Kierunek: Sułkowice/Harbutowice</span>
+                                <h3>z Myślenic</h3>
+                                <span class="destination-subtext">Kierunek: Jawornik, Rudnik, Sułkowice, Harbutowice
+                                    [H]</span>
                             </div>
                         </div>
                         <div class="card-body">
@@ -102,8 +141,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3>Z Sułkowic</h3>
-                                <span class="destination-subtext">Kierunek: Myślenice</span>
+                                <h3>z Sułkowic/Harbutowic</h3>
+                                <span class="destination-subtext">Kierunek: Rudnik, Jawornik, Myślenice</span>
                             </div>
                         </div>
                         <div class="card-body">
@@ -124,9 +163,9 @@
             <div class="container">
                 <h4>Legenda oznaczeń z tablicy:</h4>
                 <ul class="legend-list">
-                    <li><span class="badge">H</span> - kurs do Harbutowic / odjazd z Harbutowic</li>
+                    <li><span class="badge">H</span> - kurs do/z Harbutowic</li>
                     <li><span class="badge">RD</span> - kurs przez Rudnik Dolny</li>
-                    <li><span class="badge">S</span> - kurs szkolny (nie kursuje w wakacje)</li>
+                    <li><span class="badge">S</span> - kurs szkolny (nie kursuje w dni wolne i wakacje)</li>
                 </ul>
             </div>
         </section>
@@ -135,12 +174,27 @@
         <section class="news-section">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">Aktualności</h2>
+                    <h2 class="section-title">Aktualności i Komunikaty</h2>
                     <div class="title-underline"></div>
                 </div>
 
                 <div class="news-container" id="news-container">
                     <p class="text-center">Wczytywanie komunikatów...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section (GEO Optimization) -->
+        <section class="faq-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Często zadawane pytania (FAQ)</h2>
+                    <div class="title-underline"></div>
+                </div>
+
+                <div class="faq-container" id="faq-dynamic-container">
+                    <!-- Dynamicznie ładowane z API -->
+                    <p class="text-center">Wczytywanie pytań...</p>
                 </div>
             </div>
         </section>

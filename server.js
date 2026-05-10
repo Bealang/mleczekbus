@@ -88,7 +88,38 @@ db.exec(`
         FOREIGN KEY(stop1_id) REFERENCES stops(id) ON DELETE CASCADE,
         FOREIGN KEY(stop2_id) REFERENCES stops(id) ON DELETE CASCADE
     );
+    CREATE TABLE IF NOT EXISTS faq (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        question TEXT,
+        answer TEXT,
+        sort_order INTEGER DEFAULT 0
+    );
 `);
+
+// Migration: ensure sort_order column exists in stops
+try {
+    db.prepare("SELECT sort_order FROM stops LIMIT 1").get();
+} catch (e) {
+    if (e.message.includes("no such column: sort_order")) {
+        db.prepare("ALTER TABLE stops ADD COLUMN sort_order INTEGER DEFAULT 0").run();
+        console.log("Dodano brakującą kolumnę 'sort_order' do tabeli 'stops'.");
+    }
+}
+
+// Migration: Initial FAQ data
+const faqCount = db.prepare("SELECT COUNT(*) as count FROM faq").get().count;
+if (faqCount === 0) {
+    const initialFaqs = [
+        ["Gdzie zatrzymują się busy Mleczek Bus w Myślenicach?", "Nasze busy odjeżdżają z głównego dworca autobusowego w Myślenicach oraz zatrzymują się na wyznaczonych przystankach na trasie w kierunku Sułkowic."],
+        ["Jakie miejscowości obsługuje Mleczek Bus?", "Obsługujemy regularną linię na trasie: Harbutowice - Sułkowice - Rudnik - Jawornik - Myślenice. Przejeżdżamy również przez Rudnik Dolny (kursy oznaczone RD)."],
+        ["Gdzie i kiedy można kupić bilety miesięczne?", "Bilety miesięczne są sprzedawane w wyznaczonych dniach <strong>za dworcem Dekada w Myślenicach</strong>. Dokładna data sprzedaży jest zawsze podawana na naszej stronie oraz w busach z odpowiednim wyprzedzeniem przed końcem każdego miesiąca."],
+        ["Czy rozkład jazdy busów jest aktualny?", "Tak, na naszej stronie internetowej zawsze znajdziesz aktualny rozkład jazdy. Najbliższe odjazdy są aktualizowane w czasie rzeczywistym."],
+        ["Ile kosztuje bilet na trasie Sułkowice - Myślenice?", "Szczegółowe ceny biletów jednorazowych oraz miesięcznych znajdziesz w zakładce <a href='/cennik.html'>Cennik</a>."]
+    ];
+    const insertFaq = db.prepare("INSERT INTO faq (question, answer, sort_order) VALUES (?, ?, ?)");
+    initialFaqs.forEach((f, index) => insertFaq.run(f[0], f[1], index));
+    console.log("Zainicjowano domyślne dane FAQ w bazie.");
+}
 
 // --- AUTH API ---
 app.post('/api/login', (req, res) => {
@@ -148,6 +179,16 @@ app.get('/api/pricing-data', (req, res) => {
     } catch (error) {
         console.error("Błąd bazy danych (pricing-data):", error);
         res.status(500).json({ error: 'Błąd podczas pobierania danych cennika.' });
+    }
+});
+
+app.get('/api/faq', (req, res) => {
+    try {
+        const faqs = db.prepare('SELECT * FROM faq ORDER BY sort_order ASC').all();
+        res.json(faqs);
+    } catch (error) {
+        console.error("Błąd bazy danych (faq):", error);
+        res.status(500).json({ error: 'Błąd podczas pobierania pytań FAQ.' });
     }
 });
 
@@ -254,6 +295,28 @@ app.post('/api/admin/stops', requireAuth, (req, res) => {
     }
 });
 
+app.put('/api/admin/stops/:id', requireAuth, (req, res) => {
+    const id = parseInt(req.params.id);
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'Nazwa przystanku jest wymagana.' });
+
+    try {
+        const result = db.prepare('UPDATE stops SET name = ? WHERE id = ?').run(name, id);
+        if (result.changes > 0) {
+            const stops = db.prepare('SELECT * FROM stops ORDER BY sort_order ASC, id DESC').all();
+            res.json({ success: true, message: 'Nazwa przystanku została zaktualizowana.', stops });
+        } else {
+            res.status(404).json({ error: 'Nie znaleziono przystanku.' });
+        }
+    } catch (error) {
+        if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+            return res.status(400).json({ error: 'Przystanek o tej nazwie już istnieje.' });
+        }
+        console.error("Błąd edycji przystanku:", error);
+        res.status(500).json({ error: 'Błąd podczas edycji przystanku.' });
+    }
+});
+
 app.post('/api/admin/stops/reorder', requireAuth, (req, res) => {
     const { orders } = req.body; // Array of {id, sort_order}
     if (!Array.isArray(orders)) return res.status(400).json({ error: 'Nieprawidłowe dane.' });
@@ -309,6 +372,73 @@ app.post('/api/admin/pricing', requireAuth, (req, res) => {
     } catch (error) {
         console.error("Błąd bazy danych (admin-pricing):", error);
         res.status(500).json({ error: 'Błąd podczas zapisywania cennika.' });
+    }
+});
+
+// --- FAQ ADMIN API ---
+
+app.post('/api/admin/faq', requireAuth, (req, res) => {
+    const { question, answer } = req.body;
+    if (!question || !answer) return res.status(400).json({ error: 'Pytanie i odpowiedź są wymagane.' });
+
+    try {
+        const maxSort = db.prepare('SELECT MAX(sort_order) as maxSort FROM faq').get().maxSort || 0;
+        db.prepare('INSERT INTO faq (question, answer, sort_order) VALUES (?, ?, ?)').run(question, answer, maxSort + 1);
+        const faqs = db.prepare('SELECT * FROM faq ORDER BY sort_order ASC').all();
+        res.json({ success: true, message: 'Pytanie FAQ dodane.', faqs });
+    } catch (error) {
+        console.error("Błąd bazy danych (admin-faq):", error);
+        res.status(500).json({ error: 'Błąd podczas dodawania pytania FAQ.' });
+    }
+});
+
+app.put('/api/admin/faq/:id', requireAuth, (req, res) => {
+    const id = parseInt(req.params.id);
+    const { question, answer } = req.body;
+    if (!question || !answer) return res.status(400).json({ error: 'Pytanie i odpowiedź są wymagane.' });
+
+    try {
+        const result = db.prepare('UPDATE faq SET question = ?, answer = ? WHERE id = ?').run(question, answer, id);
+        if (result.changes > 0) {
+            const faqs = db.prepare('SELECT * FROM faq ORDER BY sort_order ASC').all();
+            res.json({ success: true, message: 'Pytanie FAQ zaktualizowane.', faqs });
+        } else {
+            res.status(404).json({ error: 'Nie znaleziono pytania FAQ.' });
+        }
+    } catch (error) {
+        console.error("Błąd bazy danych (admin-faq-edit):", error);
+        res.status(500).json({ error: 'Błąd podczas edycji pytania FAQ.' });
+    }
+});
+
+app.post('/api/admin/faq/reorder', requireAuth, (req, res) => {
+    const { orders } = req.body; // Array of {id, sort_order}
+    if (!Array.isArray(orders)) return res.status(400).json({ error: 'Nieprawidłowe dane.' });
+
+    const updateStmt = db.prepare('UPDATE faq SET sort_order = ? WHERE id = ?');
+    try {
+        const transaction = db.transaction((data) => {
+            for (const item of data) {
+                updateStmt.run(item.sort_order, item.id);
+            }
+        });
+        transaction(orders);
+        res.json({ success: true, message: 'Kolejność FAQ została zapisana.' });
+    } catch (error) {
+        console.error("Błąd reorderowania FAQ:", error);
+        res.status(500).json({ error: 'Błąd podczas zapisywania kolejności FAQ.' });
+    }
+});
+
+app.delete('/api/admin/faq/:id', requireAuth, (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        db.prepare('DELETE FROM faq WHERE id = ?').run(id);
+        const faqs = db.prepare('SELECT * FROM faq ORDER BY sort_order ASC').all();
+        res.json({ success: true, message: 'Pytanie FAQ usunięte.', faqs });
+    } catch (error) {
+        console.error("Błąd bazy danych (admin-faq-delete):", error);
+        res.status(500).json({ error: 'Błąd podczas usuwania pytania FAQ.' });
     }
 });
 
