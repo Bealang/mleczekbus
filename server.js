@@ -1,19 +1,23 @@
 const express = require('express');
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 const Database = require('better-sqlite3');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Configuration
 const ADMIN_USER = 'pmleczek';
-const ADMIN_HASH = process.env.ADMIN_HASH;
+const ADMIN_HASH = (process.env.ADMIN_HASH_B64
+    ? Buffer.from(process.env.ADMIN_HASH_B64, 'base64').toString()
+    : process.env.ADMIN_HASH || '').trim();
 
 // Ensure data directory exists
 const dataDir = path.join(__dirname, 'data');
@@ -22,6 +26,9 @@ if (!fs.existsSync(dataDir)) {
 }
 
 // Middleware
+app.use(helmet({
+    contentSecurityPolicy: false, // Disable CSP for simplicity if it breaks Quill/External assets, or configure properly
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', 1); // Trust proxy if behind Nginx/Cloudflare for secure cookies
@@ -30,12 +37,28 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === 'production' }
+    cookie: {
+        secure: false, // process.env.NODE_ENV === 'production', // Temporarily disabled for local HTTP testing
+        httpOnly: true, // Prevents JS from accessing the cookie
+        sameSite: 'lax', // Protects against CSRF
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
 
-// Static files (frontend)
-app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
+// Static files (frontend) with caching
+const staticOptions = {
+    maxAge: '1y',
+    setHeaders: (res, path) => {
+        if (path.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+        } else {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+    }
+};
+
+app.use(express.static('public', staticOptions));
+app.use('/uploads', express.static('uploads', staticOptions));
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -45,7 +68,16 @@ const storage = multer.diskStorage({
         cb(null, 'rozklad.png') // Always name it rozklad.png
     }
 });
-const upload = multer({ storage: storage });
+const upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === "image/png") {
+            cb(null, true);
+        } else {
+            cb(new Error('Tylko pliki PNG są dozwolone!'), false);
+        }
+    }
+});
 
 const pdfStorage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -55,11 +87,22 @@ const pdfStorage = multer.diskStorage({
         cb(null, 'regulamin.pdf')
     }
 });
-const uploadPdf = multer({ storage: pdfStorage });
+const uploadPdf = multer({
+    storage: pdfStorage,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === "application/pdf") {
+            cb(null, true);
+        } else {
+            cb(new Error('Tylko pliki PDF są dozwolone!'), false);
+        }
+    }
+});
 
 // Database initialization
 const db = new Database(path.join(dataDir, 'database.sqlite'));
 
+db.pragma('journal_mode = WAL');
+db.pragma('synchronous = NORMAL');
 db.pragma('foreign_keys = ON');
 
 db.exec(`
@@ -121,9 +164,17 @@ if (faqCount === 0) {
     console.log("Zainicjowano domyślne dane FAQ w bazie.");
 }
 
+// Rate limiting for login
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 login attempts per window
+    message: { success: false, message: 'Zbyt wiele prób logowania. Spróbuj ponownie za 15 minut.' }
+});
+
 // --- AUTH API ---
-app.post('/api/login', (req, res) => {
+app.post('/api/login', loginLimiter, (req, res) => {
     const { username, password } = req.body;
+
     if (username === ADMIN_USER && bcrypt.compareSync(password, ADMIN_HASH)) {
         req.session.isAdmin = true;
         res.json({ success: true });
@@ -163,8 +214,18 @@ app.get('/api/schedule', (req, res) => {
 
 app.get('/api/news', (req, res) => {
     try {
-        const rows = db.prepare('SELECT * FROM news ORDER BY id DESC').all();
-        res.json(rows);
+        const page = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit);
+
+        if (!isNaN(page) && !isNaN(limit)) {
+            const offset = (page - 1) * limit;
+            const rows = db.prepare('SELECT * FROM news ORDER BY id DESC LIMIT ? OFFSET ?').all(limit, offset);
+            const totalRow = db.prepare('SELECT COUNT(*) as count FROM news').get();
+            res.json({ news: rows, total: totalRow.count });
+        } else {
+            const rows = db.prepare('SELECT * FROM news ORDER BY id DESC').all();
+            res.json(rows);
+        }
     } catch (error) {
         console.error("Błąd bazy danych (news):", error);
         res.status(500).json({ error: 'Wystąpił problem wewnętrzny serwera przy pobieraniu aktualności.' });
@@ -179,6 +240,32 @@ app.get('/api/pricing-data', (req, res) => {
     } catch (error) {
         console.error("Błąd bazy danych (pricing-data):", error);
         res.status(500).json({ error: 'Błąd podczas pobierania danych cennika.' });
+    }
+});
+
+app.get('/api/stops', (req, res) => {
+    try {
+        const stops = db.prepare('SELECT * FROM stops ORDER BY sort_order ASC, id DESC').all();
+        res.json({ stops });
+    } catch (error) {
+        console.error("Błąd bazy danych (stops):", error);
+        res.status(500).json({ error: 'Błąd podczas pobierania przystanków.' });
+    }
+});
+
+app.get('/api/price', (req, res) => {
+    try {
+        const { stop1, stop2 } = req.query;
+        if (!stop1 || !stop2) return res.status(400).json({ error: 'Brak przystanków' });
+
+        const id1 = Math.min(parseInt(stop1), parseInt(stop2));
+        const id2 = Math.max(parseInt(stop1), parseInt(stop2));
+
+        const price = db.prepare('SELECT * FROM pricing WHERE stop1_id = ? AND stop2_id = ?').get(id1, id2);
+        res.json(price || null);
+    } catch (error) {
+        console.error("Błąd bazy danych (price):", error);
+        res.status(500).json({ error: 'Błąd podczas pobierania ceny.' });
     }
 });
 
@@ -372,6 +459,43 @@ app.post('/api/admin/pricing', requireAuth, (req, res) => {
     } catch (error) {
         console.error("Błąd bazy danych (admin-pricing):", error);
         res.status(500).json({ error: 'Błąd podczas zapisywania cennika.' });
+    }
+});
+
+app.post('/api/admin/pricing/bulk', requireAuth, (req, res) => {
+    const { type, amount } = req.body;
+    
+    if (!['s', 'm', 'md'].includes(type)) {
+        return res.status(400).json({ error: 'Nieprawidłowy typ biletu.' });
+    }
+    
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount === 0) {
+        return res.status(400).json({ error: 'Nieprawidłowa kwota.' });
+    }
+
+    try {
+        let column;
+        if (type === 's') column = 'price_s';
+        if (type === 'm') column = 'price_m';
+        if (type === 'md') column = 'price_md';
+
+        if (type === 'm') {
+            db.prepare(`
+                UPDATE pricing 
+                SET price_m = MAX(0, price_m + ?),
+                    price_md = ROUND(MAX(0, price_m + ?) * 0.51, 2)
+                WHERE price_m IS NOT NULL AND price_m > 0
+            `).run(parsedAmount, parsedAmount);
+        } else {
+            db.prepare(`UPDATE pricing SET ${column} = MAX(0, ${column} + ?) WHERE ${column} IS NOT NULL AND ${column} > 0`).run(parsedAmount);
+        }
+
+        const prices = db.prepare('SELECT * FROM pricing').all();
+        res.json({ success: true, message: `Pomyślnie zaktualizowano ceny (${parsedAmount > 0 ? '+' : ''}${parsedAmount.toFixed(2)} zł).`, prices });
+    } catch (error) {
+        console.error("Błąd bazy danych (admin-pricing-bulk):", error);
+        res.status(500).json({ error: 'Błąd podczas masowej zmiany cen.' });
     }
 });
 

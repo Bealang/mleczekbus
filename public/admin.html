@@ -5,31 +5,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mleczek Bus - Panel</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="style.css">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="admin.css">
 </head>
 
 <body>
-    <!-- Main Header -->
-    <nav class="navbar" id="admin-header-main">
-        <div class="container nav-container">
+    <!-- Mobile Header (Visible only on small screens) -->
+    <div class="mobile-top-bar">
+        <div class="logo">
+            <h1>MLECZEK<span>BUS</span></h1>
+        </div>
+        <button id="mobile-toggle" class="mobile-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Main Sidebar -->
+    <nav class="navbar admin-sidebar" id="admin-header-main">
+        <div class="sidebar-header">
             <div class="logo">
                 <a href="/index.html" style="text-decoration: none;">
                     <h1>MLECZEK<span>BUS</span></h1>
                 </a>
             </div>
+        </div>
 
-            <div class="nav-links">
-                <a href="/index.html">Strona główna</a>
-                <button id="logout-btn-header" class="btn-logout header-logout">Wyloguj się</button>
-            </div>
+        <div class="tab-buttons">
+            <button class="tab-btn" data-tab="tab-files">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                Regulamin
+            </button>
+            <button class="tab-btn active" data-tab="tab-schedule-builder">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Rozkład Jazdy
+            </button>
+            <button class="tab-btn" data-tab="tab-pricing">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                Cennik
+            </button>
+            <button class="tab-btn" data-tab="tab-news">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 20l-7-7-7 7V4h14v16z"></path>
+                </svg>
+                Aktualności
+            </button>
+            <button class="tab-btn" data-tab="tab-faq">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                FAQ
+            </button>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="/index.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Strona główna
+            </a>
+            <button id="logout-btn-header" class="btn-logout sidebar-logout">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Wyloguj się
+            </button>
         </div>
     </nav>
 
@@ -37,12 +111,6 @@
     <div class="login-screen-wrapper" id="login-screen">
         <div class="login-card">
             <div class="login-logo">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
-                    stroke="var(--admin-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    style="margin-bottom: 15px;">
-                    <path d="M12 20h9"></path>
-                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                </svg>
                 <h1>MLECZEK<span>BUS</span></h1>
             </div>
             <div id="login-alert" class="alert"></div>
@@ -58,37 +126,13 @@
         </div>
     </div>
     <!-- Admin Panel -->
-    <div class="admin-container" id="admin-panel">
+    <div class="admin-container admin-main-area" id="admin-panel">
 
-        <div class="tab-buttons">
-            <button class="tab-btn active" data-tab="tab-files">Pliki</button>
-            <button class="tab-btn" data-tab="tab-schedule-builder">Rozkład Jazdy</button>
-            <button class="tab-btn" data-tab="tab-pricing">Cennik</button>
-            <button class="tab-btn" data-tab="tab-news">Aktualności</button>
-            <button class="tab-btn" data-tab="tab-faq">FAQ</button>
-        </div>
 
         <div id="notification-container"></div>
 
         <!-- Obsługa Plików -->
-        <div id="tab-files" class="tab-content active">
-            <div
-                style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border); margin-bottom: 20px;">
-                <h3>Zdjęcie rozkładu</h3>
-                <p style="margin-bottom: 20px; color: var(--text-secondary);">Wybierz nową grafikę, która zastąpi obecny
-                    rozkład jazdy na stronie głównej. System automatycznie przetworzy plik do odpowiedniego formatu.
-                    <br>
-                    <strong>Formaty:</strong> PNG, JPG, WEBP, AVIF (maks. 8MB)
-                </p>
-                <form id="upload-form">
-                    <div class="form-group">
-                        <input type="file" id="rozklad_image" accept="image/png, image/jpeg, image/webp, image/avif"
-                            required>
-                    </div>
-                    <button type="submit" class="btn-primary">Aktualizuj zdjęcie rozkładu</button>
-                </form>
-            </div>
-
+        <div id="tab-files" class="tab-content">
             <div
                 style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
                 <h3>Regulamin</h3>
@@ -106,35 +150,71 @@
         </div>
 
         <!-- Edytor Harmonogramu (Silnik JSON) -->
-        <div id="tab-schedule-builder" class="tab-content">
-            <h3>Edytor rozkładu jazdy</h3>
-            <p style="margin-bottom: 20px; color: var(--text-secondary);">Zarządzaj odjazdami, które strona analizuje i
-                wyświetla jako "Najbliższy kurs".</p>
-
-            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-                <select id="schedule-city-select" style="padding: 8px; border-radius: 4px; flex: 1; min-width: 150px;">
-                    <option value="myslenice">Z Myślenic</option>
-                    <option value="sulkowice">Z Sułkowic / Harbutowic</option>
-                </select>
-                <select id="schedule-day-select" style="padding: 8px; border-radius: 4px; flex: 1; min-width: 150px;">
-                    <option value="workdays">Poniedziałek - Piątek</option>
-                    <option value="saturday">Sobota</option>
-                </select>
-                <button type="button" id="load-schedule-view" class="btn-primary"
-                    style="padding: 6px 12px; font-size: 0.9rem; flex: 1; min-width: 100px;">Wczytaj</button>
+        <div id="tab-schedule-builder" class="tab-content active">
+            <!-- Zdjęcie rozkładu (Przeniesione) -->
+            <div
+                style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border); margin-bottom: 30px;">
+                <h3>Zdjęcie rozkładu</h3>
+                <p style="margin-bottom: 15px; color: var(--text-secondary);">Wybierz nową grafikę rozkładu. 
+                    <strong>Wskazówka:</strong> Użyj formatu <strong>WebP</strong> lub skompresuj plik PNG, aby przyspieszyć ładowanie strony na telefonach.
+                </p>
+                <form id="upload-form">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <input type="file" id="rozklad_image" accept="image/png, image/jpeg, image/webp, image/avif"
+                            required>
+                    </div>
+                    <button type="submit" class="btn-primary" style="background: var(--primary-color);">Aktualizuj
+                        zdjęcie rozkładu</button>
+                </form>
             </div>
 
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px;">
-                <div id="schedule-table-container">
-                    <p>Kliknij wczytaj, aby zobaczyć kursy wybranego wariantu.</p>
+            <!-- Edytor kursów w boxie -->
+            <div
+                style="background: white; padding: 25px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                <h3 style="margin-top: 0;">Zarządzanie Kursami</h3>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">Tutaj możesz dodawać, edytować i usuwać
+                    godziny odjazdów dla wybranych tras.</p>
+
+                <div class="schedule-toolbar">
+                    <div class="schedule-filter-group">
+                        <label for="schedule-city-select">Kierunek</label>
+                        <select id="schedule-city-select">
+                            <option value="myslenice">Z Myślenic</option>
+                            <option value="sulkowice">Z Sułkowic / Harbutowic</option>
+                        </select>
+                    </div>
+                    <div class="schedule-filter-group">
+                        <label for="schedule-day-select">Dzień</label>
+                        <select id="schedule-day-select">
+                            <option value="workdays">Poniedziałek - Piątek</option>
+                            <option value="saturday">Sobota</option>
+                        </select>
+                    </div>
+                    <button type="button" id="load-schedule-view" class="btn-primary">Wczytaj Widok</button>
                 </div>
-                <button type="button" id="add-schedule-row" class="btn-primary"
-                    style="margin-top: 15px; background: #64748b; font-size: 0.85rem; padding: 6px 12px; display: none;">+
-                    Dodaj kolejny kurs</button>
-            </div>
 
-            <button type="button" id="save-schedule-btn" class="btn-primary"
-                style="margin-top: 20px; width: 100%; display: none;">Zapisz zmiany w bazie</button>
+                <div class="schedule-editor-area">
+                    <div id="schedule-table-container">
+                        <div class="empty-state">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <p>Wybierz kierunek i dzień, a następnie kliknij "Wczytaj Widok".</p>
+                        </div>
+                    </div>
+
+                    <div class="schedule-actions-bottom">
+                        <button type="button" id="add-schedule-row" class="btn-outline" style="display: none;">
+                            <span>Stwórz nowy kurs</span>
+                        </button>
+                        <button type="button" id="save-schedule-btn" class="btn-primary" style="display: none;">Zapisz
+                            zmiany</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Edytor Cennika -->
@@ -159,11 +239,11 @@
                     style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
                     <h3>Edytor Cen Relacji</h3>
                     <div class="form-group">
-                        <label>Przystanek A (Bazowy)</label>
+                        <label>Przystanek A</label>
                         <select id="price-stop-a"></select>
                     </div>
                     <div class="form-group">
-                        <label id="label-stop-b">Przystanek B (Docelowy)</label>
+                        <label id="label-stop-b">Przystanek B</label>
                         <select id="price-stop-b"></select>
                     </div>
 
@@ -180,9 +260,33 @@
                             <label>Miesięczny ulgowy (zł)</label>
                             <input type="number" step="1" id="price-md" placeholder="np. 140">
                         </div>
-                        <button type="button" id="save-price-btn" class="btn-primary" style="width: 100%;">Zapisz cenę
-                            dla tej relacji</button>
+                        <button type="button" id="save-price-btn" class="btn-primary"
+                            style="width: 100%;">Zapisz</button>
                     </div>
+                </div>
+            </div>
+
+            <div
+                style="margin-top: 30px; background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                <h3>Szybka zmiana cen</h3>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">Zwiększ lub zmniejsz ceny o wybraną kwotę
+                    dla wszystkich biletów danego typu w systemie. Użyj ujemnej wartości (np. -2.00) aby obniżyć ceny.
+                </p>
+                <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                    <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+                        <label>Typ biletu</label>
+                        <select id="bulk-price-type">
+                            <option value="s">Jednorazowy</option>
+                            <option value="m">Miesięczny</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+                        <label>Kwota zmiany (zł)</label>
+                        <input type="number" step="0.10" id="bulk-price-amount" placeholder="np. 2.00 lub -1.50"
+                            required>
+                    </div>
+                    <button type="button" id="bulk-price-btn" class="btn-primary" style="padding: 12px 24px;">Zastosuj
+                        dla wszystkich</button>
                 </div>
             </div>
         </div>
@@ -191,63 +295,34 @@
         <div id="tab-news" class="tab-content">
             <div style="display: flex; flex-direction: column; gap: 30px;">
                 <!-- Formularz tworzenia -->
-                <div>
-                    <h3 style="margin-bottom: 5px;">Kreator aktualności</h3>
-                    <p style="margin-bottom: 25px; color: var(--admin-text-light);">Użyj poniższego edytora, by stworzyć
-                        lub sformatować tekst (pogrubienia, tytuły, nagłówki). Wynik pojawi się na żywo w obszarze
-                        poniżej.</p>
+                <div
+                    style="background: white; padding: 25px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                    <h3 style="margin-top: 0;">Kreator aktualności</h3>
+                    <p style="margin-bottom: 25px; color: var(--text-secondary);">Użyj poniższego edytora, aby stworzyć
+                        nową wiadomość/ogłoszenie na stronie głównej.
+                    </p>
 
                     <form id="news-form">
                         <div class="form-group">
-                            <label>Tytuł oficjalny (np. Rozkład kursów letnich)</label>
-                            <input type="text" id="news-title" required
-                                placeholder="Wprowadź przyciągający uwagę tytuł...">
+                            <label>Tytuł</label>
+                            <input type="text" id="news-title" required placeholder="Wprowadź tytuł...">
                         </div>
                         <div class="form-group">
-                            <label>Treść ogłoszenia</label>
-                            <div id="news-editor" style="height: 300px; background: white;"></div>
+                            <label>Treść</label>
+                            <div id="news-editor"
+                                style="height: 300px; background: white; border: 1px solid var(--admin-border);"></div>
                         </div>
-                        <button type="submit" class="btn-primary" style="padding: 15px 30px;">Zapisz Publikację</button>
+                        <button type="submit" class="btn-primary" style="padding: 15px 30px;">Opublikuj</button>
                     </form>
                 </div>
 
-                <hr style="border: 0; border-top: 1px solid var(--admin-border);">
-
-                <!-- Live Preview z Resize -->
-                <div>
-                    <h3 style="margin-bottom: 5px;">Podgląd na żywo 1:1</h3>
-                    <p style="margin-bottom: 20px; color: var(--admin-text-light);">Złap za prawy dolny róg i
-                        przeciągnij okno, by sprawdzić jak tekst układa się na różnych rozmiarach (telefon, tablet).</p>
-
-                    <!-- Resizable Window -->
-                    <div class="preview-resizable">
-                        <div class="news-item" id="live-preview-card" style="margin: 0;">
-                            <h3 class="news-title" id="live-preview-title">Tytuł ogłoszenia</h3>
-                            <div class="news-meta">
-                                <span class="news-date">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                                    </svg>
-                                    <span id="live-preview-date-text"></span>
-                                </span>
-                            </div>
-                            <div class="news-content-text" id="live-preview-content">Twój tekst i formatowanie pojawią
-                                się tutaj natychmiast...</div>
-                        </div>
+                <div
+                    style="background: white; padding: 25px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                    <h3 style="margin-top: 0; margin-bottom: 20px;">Opublikowane wiadomości</h3>
+                    <div id="news-list">
+                        <!-- Lista aktualności ładuje się dynamicznie -->
                     </div>
                 </div>
-            </div>
-
-            <hr style="margin: 40px 0; border: 0; border-top: 1px solid var(--admin-border);">
-
-            <h3 style="margin-bottom: 20px;">Zarządzaj opublikowanymi wiadomościami</h3>
-            <div id="news-list">
-                <!-- Lista aktualności ładuje się dynamicznie -->
             </div>
         </div>
 
@@ -255,27 +330,33 @@
         <div id="tab-faq" class="tab-content">
             <div style="display: flex; flex-direction: column; gap: 30px;">
                 <!-- Formularz dodawania FAQ -->
-                <div style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                <div
+                    style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
                     <h3>Zarządzanie FAQ</h3>
-                    <p style="margin-bottom: 20px; color: var(--text-secondary);">Dodaj nowe pytanie i odpowiedź do sekcji FAQ na stronie głównej.</p>
-                    
+                    <p style="margin-bottom: 20px; color: var(--text-secondary);">Dodaj nowe pytanie i odpowiedź do
+                        sekcji FAQ na stronie głównej.</p>
+
                     <form id="faq-form">
                         <div class="form-group">
                             <label>Pytanie</label>
-                            <input type="text" id="faq-question" placeholder="np. Gdzie zatrzymują się busy?" required>
+                            <input type="text" id="faq-question" placeholder="np. Jak kupić bilet jednorazowy?"
+                                required>
                         </div>
                         <div class="form-group">
                             <label>Odpowiedź</label>
-                            <textarea id="faq-answer" rows="4" placeholder="Wprowadź treść odpowiedzi..." required style="width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; font-family: inherit;"></textarea>
+                            <textarea id="faq-answer" rows="4" placeholder="Wprowadź treść odpowiedzi..." required
+                                style="width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; font-family: inherit;"></textarea>
                         </div>
-                        <button type="submit" id="faq-save-btn" class="btn-primary" style="padding: 12px 24px;">Zapisz Pytanie FAQ</button>
+                        <button type="submit" id="faq-save-btn" class="btn-primary" style="padding: 12px 24px;">Dodaj
+                            pytanie FAQ</button>
                     </form>
                 </div>
 
                 <!-- Lista pytań FAQ -->
-                <div style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
-                    <h3>Lista pytań (Przeciągnij, aby zmienić kolejność)</h3>
-                    <div id="faq-list-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                <div
+                    style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border);">
+                    <h3>Lista pytań</h3>
+                    <div id="faq-list-container" style="display: flex; flex-direction: column; margin-top: 20px;">
                         <!-- Lista FAQ ładuje się dynamicznie -->
                     </div>
                 </div>

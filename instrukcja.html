@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instrukcja Obsługi - Mleczek Bus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #001f3f;
+            /* Navy */
+            --accent: #d4af37;
+            /* Gold */
+            --bg: #ffffff;
+            --text: #1a1a1a;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: #f8fafc;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 80px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            min-height: 100vh;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 40px;
+                max-width: 100%;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        header {
+            border-bottom: 3px solid var(--accent);
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo h1 {
+            font-weight: 800;
+            letter-spacing: -1px;
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+
+        .logo h1 span {
+            color: var(--accent);
+        }
+
+        .doc-title {
+            text-align: right;
+        }
+
+        .doc-title h2 {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            color: var(--primary);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            border-left: 5px solid var(--accent);
+            padding-left: 15px;
+            margin-top: 4rem;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+        }
+
+        p {
+            margin-bottom: 1.2rem;
+            color: #334155;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        .badge.gold {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .steps {
+            list-style: none;
+            counter-reset: step-counter;
+            margin: 30px 0;
+        }
+
+        .steps li {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 25px;
+        }
+
+        .steps li::before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .note {
+            background: #fff9e6;
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            margin: 25px 0;
+            font-style: italic;
+        }
+
+        .warning {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .img-placeholder {
+            width: 100%;
+            height: 200px;
+            background: #f1f5f9;
+            border: 1px dashed #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .toc {
+            background: #f8fafc;
+            padding: 30px;
+            margin-bottom: 50px;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+        }
+
+        .toc ul {
+            list-style: none;
+        }
+
+        .toc li {
+            margin-bottom: 10px;
+        }
+
+        .toc a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .toc a:hover {
+            color: var(--accent);
+        }
+
+        footer {
+            margin-top: 100px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .btn-preview {
+            display: inline-block;
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .legend-symbol {
+            width: 30px;
+            height: 30px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.8rem;
+        }
+
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: var(--accent);
+            color: var(--primary);
+            border: none;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            z-index: 1000;
+        }
+
+        .print-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="print-btn no-print" onclick="window.print()">DRUKUJ / ZAPISZ PDF</button>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>MLECZEK<span>BUS</span></h1>
+            </div>
+            <div class="doc-title">
+                <h2>Dokumentacja Systemu</h2>
+                <p>Instrukcja Obsługi dla Klienta</p>
+            </div>
+        </header>
+
+        <section class="toc">
+            <h3>Spis treści</h3>
+            <ul>
+                <li><a href="#intro">1. Wstęp i Logowanie</a></li>
+                <li><a href="#schedule">2. Zarządzanie Rozkładem Jazdy</a></li>
+                <li><a href="#pricing">3. Zarządzanie Cennikiem i Przystankami</a></li>
+                <li><a href="#news">4. Aktualności i Ogłoszenia</a></li>
+                <li><a href="#faq">5. Sekcja FAQ (Pytania i Odpowiedzi)</a></li>
+                <li><a href="#regulations">6. Regulamin Przewozów</a></li>
+            </ul>
+        </section>
+
+        <section id="intro">
+            <h2>1. Wstęp i Logowanie</h2>
+            <p>System Mleczek Bus został zaprojektowany, aby umożliwić łatwe i szybkie zarządzanie treściami na stronie
+                internetowej. Całość obsługi odbywa się poprzez intuicyjny panel administratora.</p>
+
+            <h3>Dostęp do panelu</h3>
+            <p>Aby przejść do panelu zarządzania, wpisz w pasku adresu przeglądarki adres swojej strony z dopiskiem
+                <code>/admin.html</code> (np. <code>mleczekbus.pl/admin.html</code>).
+            </p>
+
+            <ul class="steps">
+                <li>Wprowadź swoją <strong>Nazwę użytkownika</strong>.</li>
+                <li>Wprowadź <strong>Hasło</strong>.</li>
+                <li>Kliknij przycisk <span class="badge">Zaloguj się</span>.</li>
+            </ul>
+
+            <div class="note">
+                <strong>Bezpieczeństwo:</strong> Po zakończeniu pracy zawsze pamiętaj o wylogowaniu się, korzystając z
+                przycisku <span class="badge gold">Wyloguj się</span> znajdującego się na dole paska bocznego.
+            </div>
+        </section>
+
+        <section id="schedule" class="page-break">
+            <h2>2. Zarządzanie Rozkładem Jazdy</h2>
+            <p>Moduł rozkładu jazdy dzieli się na dwa elementy: grafikę (zdjęcie) oraz dane interaktywne (odjazdy).</p>
+
+            <h3>2.1 Aktualizacja zdjęcia rozkładu</h3>
+            <p>Zdjęcie rozkładu wyświetlane jest w oknie modalnym (powiększeniu) na stronie głównej. Jest to idealne
+                rozwiązanie dla klientów, którzy wolą tradycyjną formę tabeli.</p>
+            <ul class="steps">
+                <li>Przejdź do zakładki <strong>Rozkład Jazdy</strong>.</li>
+                <li>W sekcji "Zdjęcie rozkładu" kliknij "Wybierz plik".</li>
+                <li>Wybierz plik graficzny (PNG, JPG lub WebP).</li>
+                <li>Kliknij <span class="badge">Aktualizuj zdjęcie rozkładu</span>.</li>
+            </ul>
+
+            <h3>2.2 Edytor kursów (Interaktywny)</h3>
+            <p>Dane wprowadzane tutaj zasilają interaktywną sekcję "Najbliższe odjazdy" na stronie głównej. System
+                automatycznie oblicza, za ile minut odjeżdża kolejny bus.</p>
+
+            <ul class="steps">
+                <li>Wybierz <strong>Kierunek</strong> (np. Z Myślenic).</li>
+                <li>Wybierz <strong>Dzień</strong> (Poniedziałek-Piątek lub Sobota).</li>
+                <li>Kliknij przycisk <span class="badge gold">Wczytaj Widok</span>.</li>
+                <li><strong>Dodawanie:</strong> Kliknij "Stwórz nowy kurs" na dole listy.</li>
+                <li><strong>Edycja:</strong> Zmień godzinę bezpośrednio w polu czasowym.</li>
+                <li><strong>Oznaczenia:</strong> Zaznacz odpowiednie opcje (S, RD, H), jeśli kurs posiada specjalne
+                    parametry.</li>
+                <li><strong>Zapis:</strong> Po wprowadzeniu wszystkich zmian kliknij <span class="badge">Zapisz
+                        zmiany</span>.</li>
+            </ul>
+
+            <div class="legend">
+                <h4>Legenda oznaczeń:</h4>
+                <div class="legend-item">
+                    <div class="legend-symbol">S</div>
+                    <span><strong>Szkolny:</strong> Kurs kursuje w dni nauki szkolnej.</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol">RD</div>
+                    <span><strong>Rudnik:</strong> Kurs realizowany przez Rudnik Dolny.</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol">H</div>
+                    <span><strong>Harbutowice:</strong> Kurs docelowy lub startowy z Harbutowic.</span>
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>Ważne:</strong> System automatycznie sortuje godziny chronologicznie po każdej zmianie lub
+                dodaniu nowego kursu. Nie musisz martwić się o kolejność wpisywania.
+            </div>
+        </section>
+
+        <section id="pricing" class="page-break">
+            <h2>3. Zarządzanie Cennikiem</h2>
+            <p>Cennik oparty jest na relacjach między przystankami. Możesz dowolnie definiować listę przystanków oraz
+                ceny biletów między nimi.</p>
+
+            <h3>3.1 Lista Przystanków</h3>
+            <p>Zanim dodasz cenę, upewnij się, że oba przystanki istnieją w systemie.</p>
+            <ul class="steps">
+                <li>Wpisz nazwę w polu "Nazwa przystanku...".</li>
+                <li>Kliknij <span class="badge">Dodaj</span>.</li>
+                <li>Możesz zmieniać kolejność przystanków na liście, przeciągając je za ikonę "uchwytu" (kropki).</li>
+            </ul>
+
+            <h3>3.2 Ustalanie Cen Relacji</h3>
+            <ul class="steps">
+                <li>Wybierz <strong>Przystanek A</strong> i <strong>Przystanek B</strong> z list rozwijanych.</li>
+                <li>Wprowadź cenę <strong>Jednorazową</strong> (np. 7.50).</li>
+                <li>Wprowadź cenę <strong>Miesięczną Normalną</strong>.</li>
+                <li><strong>Auto-wyliczanie:</strong> System automatycznie zaproponuje cenę <strong>Miesięczną
+                        Ulgową</strong> (wyliczoną jako 51% ceny normalnej). Możesz ją ręcznie skorygować.</li>
+                <li>Kliknij <span class="badge">Zapisz</span>.</li>
+            </ul>
+
+            <h3>3.3 Szybka zmiana cen (Globalna)</h3>
+            <p>Narzędzie to pozwala na błyskawiczną aktualizację cen w całym systemie (np. przy podwyżce paliw).</p>
+            <ul class="steps">
+                <li>Wybierz typ biletu (Jednorazowy lub Miesięczny).</li>
+                <li>Wpisz kwotę zmiany (np. <code>0.50</code> aby podnieść o 50 gr lub <code>-1.00</code> aby obniżyć o
+                    1 zł).</li>
+                <li>Kliknij <span class="badge">Zastosuj dla wszystkich</span> i potwierdź w oknie, które się pojawi.
+                </li>
+            </ul>
+        </section>
+
+        <section id="news" class="page-break">
+            <h2>4. Aktualności i Ogłoszenia</h2>
+            <p>Sekcja ta służy do publikowania ważnych komunikatów, zmian w rozkładzie świątecznym czy informacji o
+                utrudnieniach.</p>
+
+            <ul class="steps">
+                <li>Wpisz <strong>Tytuł</strong> wiadomości.</li>
+                <li>W edytorze treści wpisz tekst. Możesz używać <strong>pogrubienia</strong>, list punktowanych oraz
+                    nagłówków.</li>
+                <li>Kliknij <span class="badge">Opublikuj</span>.</li>
+            </ul>
+
+            <div class="note">
+                <strong>Zarządzanie:</strong> Poniżej kreatora znajduje się lista opublikowanych wiadomości. Możesz je
+                <strong>Edytować</strong> (treść zostanie wczytana z powrotem do edytora) lub <strong>Usuwać</strong>.
+            </div>
+        </section>
+
+        <section id="faq" class="page-break">
+            <h2>5. FAQ - Pytania i Odpowiedzi</h2>
+            <p>Zarządzaj sekcją najczęściej zadawanych pytań, aby odciążyć biuro obsługi klienta.</p>
+            <ul class="steps">
+                <li>Wpisz pytanie oraz wyczerpującą odpowiedź.</li>
+                <li>Kliknij <span class="badge">Dodaj pytanie FAQ</span>.</li>
+                <li>Na liście poniżej możesz usuwać nieaktualne pytania.</li>
+            </ul>
+        </section>
+
+        <section id="regulations">
+            <h2>6. Regulamin Przewozów</h2>
+            <p>Regulamin jest dostępny dla pasażerów w formie pliku PDF do pobrania.</p>
+            <ul class="steps">
+                <li>Przejdź do zakładki <strong>Regulamin</strong>.</li>
+                <li>Wybierz nowy plik PDF z komputera (maksymalnie 8MB).</li>
+                <li>Kliknij <span class="badge">Aktualizuj regulamin</span>.</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>&copy; 2026 Mleczek Bus - System Zarządzania Treścią</p>
+            <p>Dokumentacja wygenerowana automatycznie przez sztuczną inteligencję.</p>
+        </footer>
+    </div>
+
+</body>
+
+</html>

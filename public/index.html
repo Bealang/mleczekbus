@@ -9,13 +9,13 @@
         content="Szukasz busa? Mleczek Bus oferuje regularne przewozy pasażerskie na trasie Myślenice - Sułkowice - Rudnik - Jawornik - Harbutowice. Sprawdź aktualny rozkład jazdy online!">
     <meta name="keywords"
         content="Busy Sułkowice, Busy Rudnik, Busy Myślenice, Mleczekbus trasa, rozkład jazdy Myślenice Sułkowice, busy Harbutowice Myślenice">
-    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="bus.webp" as="image" fetchpriority="high">
+    <link rel="stylesheet" href="style.css">
     <!-- Schema.org JSON-LD for Local Business and Bus Service -->
     <script type="application/ld+json">
     {
@@ -53,7 +53,7 @@
     <nav class="navbar navbar-home" id="main-nav">
         <div class="container nav-container">
             <div class="logo">
-                <h1 style="margin: 0; font-size: inherit; line-height: 1;">MLECZEK<span>BUS</span></h1>
+                <div class="logo-text">MLECZEK<span>BUS</span></div>
             </div>
 
             <button class="hamburger" id="hamburger-btn" aria-label="Menu">
@@ -82,10 +82,14 @@
     <!-- Header / Hero section -->
     <header class="hero">
         <div class="container">
-            <h2 class="hero-title">Busy Sułkowice - Myślenice<br> Pewnie i na czas.</h2>
-            <p>Sprawdź nasz rozkład jazdy i podróżuj z nami na trasie: <strong>Harbutowice - Sułkowice - Rudnik -
-                    Jawornik - Myślenice</strong>.</p>
-            <button class="btn-primary" id="btn-show-modal">Zobacz Pełny Rozkład</button>
+            <h1 class="hero-title reveal reveal-up stagger-1">Busy Sułkowice - Myślenice<br> Pewnie i na czas.</h1>
+            <p class="reveal reveal-up stagger-2">Sprawdź nasz rozkład jazdy i podróżuj z nami na trasie:
+                <strong>Harbutowice - Sułkowice - Rudnik -
+                    Jawornik - Myślenice</strong>.
+            </p>
+            <div class="reveal reveal-up stagger-3">
+                <button class="btn-primary" id="btn-show-modal">Zobacz Pełny Rozkład</button>
+            </div>
         </div>
     </header>
 
@@ -93,16 +97,17 @@
         <!-- Departures -->
         <section class="departures-section">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header reveal reveal-up">
                     <h2 class="section-title">Najbliższe odjazdy</h2>
                     <div class="title-underline"></div>
-                    <p style="text-align: center; margin-top: 1rem; color: #64748b;">Obsługujemy miejscowości:
+                    <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">Obsługujemy
+                        miejscowości:
                         Harbutowice, Sułkowice, Rudnik, Jawornik i Myślenice.</p>
                 </div>
 
                 <div class="cards-grid">
                     <!-- Myślenice -->
-                    <div class="departure-card">
+                    <div class="departure-card reveal reveal-left stagger-1">
                         <div class="card-header">
                             <div class="route-icon">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -125,12 +130,12 @@
                             <div class="time-notes" id="next-myslenice-notes">Wczytywanie...</div>
                         </div>
                         <div class="card-footer" id="following-myslenice-info">
-                            Następny: --:--
+                            Następny: 67:67
                         </div>
                     </div>
 
                     <!-- Sułkowice -->
-                    <div class="departure-card">
+                    <div class="departure-card reveal reveal-right stagger-2">
                         <div class="card-header">
                             <div class="route-icon">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -152,7 +157,7 @@
                             <div class="time-notes" id="next-sulkowice-notes">Wczytywanie...</div>
                         </div>
                         <div class="card-footer" id="following-sulkowice-info">
-                            Następny: --:--
+                            Następny: 67:67
                         </div>
                     </div>
                 </div>
@@ -161,7 +166,7 @@
 
         <section class="legend-section">
             <div class="container">
-                <h4>Legenda oznaczeń z tablicy:</h4>
+                <h4>Legenda oznaczeń:</h4>
                 <ul class="legend-list">
                     <li><span class="badge">H</span> - kurs do/z Harbutowic</li>
                     <li><span class="badge">RD</span> - kurs przez Rudnik Dolny</li>
@@ -173,8 +178,8 @@
         <!-- News Section -->
         <section class="news-section">
             <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title">Aktualności i Komunikaty</h2>
+                <div class="section-header reveal reveal-up">
+                    <h2 class="section-title">Aktualności</h2>
                     <div class="title-underline"></div>
                 </div>
 
@@ -187,7 +192,7 @@
         <!-- FAQ Section (GEO Optimization) -->
         <section class="faq-section">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header reveal reveal-up">
                     <h2 class="section-title">Często zadawane pytania (FAQ)</h2>
                     <div class="title-underline"></div>
                 </div>
@@ -215,6 +220,7 @@
                         <li><a href="/cennik.html">Cennik</a></li>
                         <li><a href="regulamin.pdf" target="_blank">Regulamin</a></li>
                         <li><a href="/kontakt.html">Kontakt</a></li>
+                        <li><a href="/prywatnosc.html">Polityka Prywatności</a></li>
                         <li><a href="/admin.html">Panel Administratora</a></li>
                     </ul>
                 </div>
@@ -227,8 +233,8 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; <span id="current-year"></span> Mleczek BUS. Wszelkie prawa zastrzeżone.</p>
-                <p style="margin-top: 8px; font-size: 0.85rem; color: #64748b;">Projekt i wykonanie: <a
+                <p>&copy; <span id="current-year"></span> Mleczek BUS. Licencjonowane przewozy osobowe.</p>
+                <p style="margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary);">Projekt i wykonanie: <a
                         href="https://web2sell.pl" target="_blank"
                         style="color: var(--accent-color); text-decoration: none;">web2sell.pl</a></p>
             </div>
@@ -246,11 +252,11 @@
                 </svg>
             </button>
             <h3 class="modal-title">Pełny Rozkład Jazdy</h3>
-            <img src="rozklad.png" alt="Rozkład jazdy busów" class="modal-image">
+            <img src="rozklad.png" alt="Rozkład jazdy busów" class="modal-image" loading="lazy">
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 
 </html>

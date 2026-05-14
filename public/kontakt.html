@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mleczek Bus - Kontakt</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+    <link rel="preload" href="style.css" as="style">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -19,7 +19,7 @@
         <div class="container nav-container">
             <div class="logo">
                 <a href="/index.html" style="text-decoration: none;">
-                    <h1>MLECZEK<span>BUS</span></h1>
+                    <div class="logo-text">MLECZEK<span>BUS</span></div>
                 </a>
             </div>
 
@@ -49,8 +49,8 @@
     <main class="main-content" style="min-height: 70vh;">
         <section class="pricing-section bg-light">
             <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title">Kontakt i O Firmie</h2>
+                <div class="section-header reveal reveal-up">
+                    <h1 class="section-title">Kontakt i O Firmie</h1>
                     <div class="title-underline"></div>
                 </div>
 
@@ -58,7 +58,7 @@
                     style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; max-width: 1100px; margin: 0 auto;">
 
                     <!-- Kontakt i Dane firmy -->
-                    <div class="pricing-calculator"
+                    <div class="pricing-calculator reveal reveal-left stagger-1"
                         style="text-align: left; padding: 40px; margin: 0; max-width: 100%;">
                         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
                             <div class="route-icon"
@@ -95,7 +95,7 @@
                     </div>
 
                     <!-- O firmie -->
-                    <div class="pricing-calculator"
+                    <div class="pricing-calculator reveal reveal-right stagger-2"
                         style="text-align: left; padding: 40px; margin: 0; max-width: 100%;">
                         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
                             <div class="route-icon"
@@ -154,6 +154,7 @@
                         <li><a href="/cennik.html">Cennik</a></li>
                         <li><a href="regulamin.pdf" target="_blank">Regulamin</a></li>
                         <li><a href="/kontakt.html">Kontakt</a></li>
+                        <li><a href="/prywatnosc.html">Polityka Prywatności</a></li>
                         <li><a href="/admin.html">Panel Administratora</a></li>
                     </ul>
                 </div>
@@ -166,15 +167,15 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; <span id="current-year"></span> Mleczek BUS. Wszelkie prawa zastrzeżone.</p>
-                <p style="margin-top: 8px; font-size: 0.85rem; color: #64748b;">Projekt i wykonanie: <a
+                <p>&copy; <span id="current-year"></span> Mleczek BUS. Licencjonowane przewozy osobowe.</p>
+                <p style="margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary);">Projekt i wykonanie: <a
                         href="https://web2sell.pl" target="_blank"
                         style="color: var(--accent-color); text-decoration: none;">web2sell.pl</a></p>
             </div>
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 
 </html>

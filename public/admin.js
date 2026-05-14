@@ -35,8 +35,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             btn.classList.add('active');
             document.getElementById(btn.dataset.tab).classList.add('active');
+
+            // Zamknij menu na mobile po kliknięciu w zakładkę
+            const sidebar = document.getElementById('admin-header-main');
+            if (sidebar) sidebar.classList.remove('open');
         });
     });
+
+    // Mobile Toggle Logic
+    const mobileToggle = document.getElementById('mobile-toggle');
+    const sidebar = document.getElementById('admin-header-main');
+    if (mobileToggle && sidebar) {
+        mobileToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+    }
 
     function showStatus(msg, type = 'success') {
         const container = document.getElementById('notification-container');
@@ -220,15 +233,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const isH = notes.includes('H');
 
         div.innerHTML = `
-            <input type="time" class="row-time input-time" value="${time}" required style="padding: 6px;">
-            <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" class="row-s" ${isS ? 'checked' : ''}> Szkolny (S)</label>
-            <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" class="row-rd" ${isRD ? 'checked' : ''}> Rudnik (RD)</label>
-            <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" class="row-h" ${isH ? 'checked' : ''}> Harbutowice (H)</label>
-            <button type="button" class="btn-danger rm-row" style="margin-left: auto;">Usuń</button>
+            <div class="schedule-time-wrap">
+                <input type="time" class="row-time input-time" value="${time}" required>
+            </div>
+            <div class="schedule-tags-wrap">
+                <label class="variant-tag tag-s">
+                    <input type="checkbox" class="row-s" ${isS ? 'checked' : ''}>
+                    <span>Szkolny (S)</span>
+                </label>
+                <label class="variant-tag tag-rd">
+                    <input type="checkbox" class="row-rd" ${isRD ? 'checked' : ''}>
+                    <span>Rudnik (RD)</span>
+                </label>
+                <label class="variant-tag tag-h">
+                    <input type="checkbox" class="row-h" ${isH ? 'checked' : ''}>
+                    <span>Harbutowice (H)</span>
+                </label>
+            </div>
+            <button type="button" class="btn-danger rm-row">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                <span>Usuń</span>
+            </button>
         `;
 
         div.querySelector('.rm-row').addEventListener('click', () => { div.remove(); });
+
+        div.querySelector('.row-time').addEventListener('change', () => {
+            sortScheduleDOM();
+        });
+
         return div;
+    }
+
+    function sortScheduleDOM() {
+        const rows = Array.from(containerSchedule.querySelectorAll('.schedule-row'));
+        rows.sort((a, b) => {
+            const timeA = a.querySelector('.row-time').value || "00:00";
+            const timeB = b.querySelector('.row-time').value || "00:00";
+            return timeA.localeCompare(timeB);
+        });
+
+        rows.forEach(row => containerSchedule.appendChild(row));
     }
 
     btnLoadSchedule.addEventListener('click', () => {
@@ -239,6 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnAddRow.addEventListener('click', () => {
         containerSchedule.appendChild(createScheduleRow("12:00", []));
+        sortScheduleDOM();
     });
 
     btnSaveSchedule.addEventListener('click', async () => {
@@ -284,32 +330,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- LIVE PREVIEW LOGIC ---
-    const titleInput = document.getElementById('news-title');
-    const previewTitle = document.getElementById('live-preview-title');
-    const previewContent = document.getElementById('live-preview-content');
-    const previewDate = document.getElementById('live-preview-date-text');
-
-    // Mocks initial date and time
-    const now = new Date();
-    previewDate.textContent = now.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
-
-    titleInput.addEventListener('input', () => {
-        previewTitle.textContent = titleInput.value || 'Tytuł ogłoszenia';
-    });
-
-    quill.on('text-change', function () {
-        const html = quill.root.innerHTML;
-        if (quill.getText().trim() === '') {
-            previewContent.innerHTML = 'Twój sformatowany tekst pojawi się tutaj...';
-        } else {
-            previewContent.innerHTML = html;
-        }
-    });
 
     // News Submit (Add / Edit)
     document.getElementById('news-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const title = document.getElementById('news-title').value;
+        const content = quill.root.innerHTML;
         if (!title || title.trim() === '') {
             showStatus('Nie można opublikować: Brakuje tytułu aktualności!', 'error');
             return;
@@ -334,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 showStatus(editingNewsId ? 'Aktualność została pomyślnie zedytowana.' : 'Nowa aktualność została opublikowana!', 'success');
                 cancelEditing();
-                renderNewsList(data.news);
+                loadAdminNews(1, false);
             } else {
                 showStatus(data.error || 'Błąd podczas zapisywania aktualności.', 'error');
             }
@@ -362,9 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
         quill.root.innerHTML = '';
         formBtn.textContent = 'Zapisz Publikację';
         cancelEditBtn.style.display = 'none';
-
-        // Trigger live preview reset
-        document.getElementById('news-title').dispatchEvent(new Event('input'));
     };
 
     cancelEditBtn.addEventListener('click', cancelEditing);
@@ -380,7 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     quill.root.innerHTML = newsItem.content;
                     formBtn.textContent = 'Zapisz zmiany (Edycja)';
                     cancelEditBtn.style.display = 'inline-block';
-                    document.getElementById('news-title').dispatchEvent(new Event('input'));
 
                     // Scroll up smoothly
                     document.querySelector('.admin-container').scrollIntoView({ behavior: 'smooth' });
@@ -388,15 +410,24 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     };
 
-    async function loadAdminNews() {
+    let currentAdminNewsPage = 1;
+    let allLoadedAdminNews = [];
+
+    async function loadAdminNews(page = 1, append = false) {
         try {
-            const res = await fetch('/api/news');
+            const res = await fetch(`/api/news?page=${page}&limit=10`);
             const data = await res.json();
-            renderNewsList(data);
+            if (append) {
+                allLoadedAdminNews = allLoadedAdminNews.concat(data.news);
+            } else {
+                allLoadedAdminNews = data.news;
+            }
+            currentAdminNewsPage = page;
+            renderNewsList(allLoadedAdminNews, data.total);
         } catch (e) { }
     }
 
-    function renderNewsList(newsList) {
+    function renderNewsList(newsList, total = 0) {
         const listDiv = document.getElementById('news-list');
         listDiv.innerHTML = '';
         if (newsList.length === 0) {
@@ -424,6 +455,18 @@ document.addEventListener('DOMContentLoaded', () => {
             listDiv.appendChild(div);
         });
 
+        if (newsList.length < total) {
+            const loadMoreBtn = document.createElement('button');
+            loadMoreBtn.className = 'btn-primary';
+            loadMoreBtn.style.marginTop = '15px';
+            loadMoreBtn.style.width = '100%';
+            loadMoreBtn.textContent = 'Wczytaj więcej';
+            loadMoreBtn.addEventListener('click', () => {
+                loadAdminNews(currentAdminNewsPage + 1, true);
+            });
+            listDiv.appendChild(loadMoreBtn);
+        }
+
         document.querySelectorAll('.delete-news-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if (confirm('Na pewno usunąć ten komunikat?')) {
@@ -442,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             if (res.ok) {
                 showStatus('Aktualność została pomyślnie usunięta.', 'success');
-                renderNewsList(data.news);
+                loadAdminNews(1, false);
             } else {
                 showStatus(data.error || 'Błąd podczas usuwania aktualności.', 'error');
             }
@@ -714,6 +757,52 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {
             showStatus('Błąd połączenia podczas zapisywania ceny.', 'error');
             console.error("Price save error:", e);
+        }
+    });
+
+    document.getElementById('bulk-price-btn').addEventListener('click', async () => {
+        const type = document.getElementById('bulk-price-type').value;
+        const amount = parseFloat(document.getElementById('bulk-price-amount').value);
+
+        if (isNaN(amount) || amount === 0) {
+            showStatus('Wprowadź poprawną kwotę zmiany (np. 2.00 lub -1.50).', 'error');
+            return;
+        }
+
+        let typeName = type === 's' ? 'jednorazowych' : 'miesięcznych';
+        if (type === 'm') typeName += ' (oraz automatycznie obliczyć ulgowe)';
+        
+        const actionStr = amount > 0 ? 'zwiększyć' : 'zmniejszyć';
+        const absAmount = Math.abs(amount).toFixed(2);
+
+        if (!confirm(`Na pewno chcesz ${actionStr} ceny wszystkich biletów ${typeName} o ${absAmount} zł? Zmiana dotknie tylko przystanków, które mają już wprowadzoną cenę.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/admin/pricing/bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type, amount })
+            });
+
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Serwer zwrócił nieoczekiwany błąd (prawdopodobnie wymaga restartu).");
+            }
+
+            const data = await res.json();
+            if (res.ok) {
+                allPrices = data.prices;
+                showStatus(data.message, 'success');
+                updatePriceForm();
+                document.getElementById('bulk-price-amount').value = '';
+            } else {
+                showStatus(data.error || 'Błąd podczas masowej zmiany cen.', 'error');
+            }
+        } catch (e) {
+            showStatus(`Błąd podczas masowej zmiany cen: ${e.message}`, 'error');
+            console.error("Bulk price save error:", e);
         }
     });
 

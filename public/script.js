@@ -10,6 +10,26 @@ let currentScheduleData = null;
 let allStopsClient = [];
 let allPricesClient = [];
 
+// LocalStorage Cache Helper
+async function fetchWithCache(url, cacheKey, ttlMs) {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+        try {
+            const parsed = JSON.parse(cached);
+            if (Date.now() - parsed.timestamp < ttlMs) {
+                return parsed.data;
+            }
+        } catch(e) {}
+    }
+    const response = await fetch(url);
+    const data = await response.json();
+    localStorage.setItem(cacheKey, JSON.stringify({
+        timestamp: Date.now(),
+        data: data
+    }));
+    return data;
+}
+
 // Helper: current day type
 function getDayType(date) {
     const day = date.getDay();
@@ -21,6 +41,19 @@ function getDayType(date) {
 function timeToMinutes(timeStr) {
     const [hours, minutes] = timeStr.split(':').map(Number);
     return hours * 60 + minutes;
+}
+
+function escapeHTML(str) {
+    if (!str) return "";
+    return str.replace(/[&<>"']/g, function(m) {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[m];
+    });
 }
 
 function formatNotes(notesArray) {
@@ -128,10 +161,9 @@ function updateDisplays() {
 
 async function fetchSchedule() {
     try {
-        const response = await fetch('/api/schedule');
-        const data = await response.json();
+        const data = await fetchWithCache('/api/schedule', 'mleczek_schedule', 3600000);
         currentScheduleData = data;
-        updateDisplays();
+        requestAnimationFrame(updateDisplays);
     } catch (error) {
         console.error("Error fetching schedule:", error);
         document.getElementById('next-myslenice-notes').textContent = "Błąd pobierania danych";
@@ -139,82 +171,150 @@ async function fetchSchedule() {
     }
 }
 
-let allNewsClient = [];
-let currentNewsIndex = 2; // initial limit
+let totalNewsCount = 0;
+let currentPage = 1;
+const newsPerPage = 3; // Number of news per page
 
 async function fetchNews() {
     try {
-        const response = await fetch('/api/news');
-        allNewsClient = await response.json();
-        const container = document.getElementById('news-container');
+        const params = new URLSearchParams(window.location.search);
+        const pageFromUrl = parseInt(params.get('p')) || 1;
         
-        if (allNewsClient.length === 0) {
-            container.innerHTML = '<p class="text-center">Obecnie brak nowych komunikatów.</p>';
-            return;
-        }
-
-        renderNewsClient(container);
+        await window.renderNewsPage(pageFromUrl, true);
     } catch (error) {
         console.error("Error fetching news:", error);
     }
 }
 
-function renderNewsClient(container) {
-    const visibleNews = allNewsClient.slice(0, currentNewsIndex);
-    
-    // Check if the Zobacz więcej button already exists to prevent duplication
-    let loadMoreBtn = document.getElementById('load-more-news-btn');
-    if (loadMoreBtn) {
-        loadMoreBtn.remove();
-    }
+window.renderNewsPage = async (page, isInitial = false) => {
+    try {
+        const response = await fetch(`/api/news?page=${page}&limit=${newsPerPage}`);
+        const data = await response.json();
+        const visibleNews = data.news;
+        totalNewsCount = data.total;
 
-    container.innerHTML = visibleNews.map(item => {
-        let dateObj = new Date(item.date);
-        if (!item.date.includes('T') && item.id > 10000) {
-            let idDate = new Date(item.id);
-            if (!isNaN(idDate.getTime())) {
-                if (idDate.getFullYear() === dateObj.getFullYear() && 
-                    idDate.getMonth() === dateObj.getMonth() && 
-                    idDate.getDate() === dateObj.getDate()) {
-                    dateObj = idDate;
+        const totalPages = Math.ceil(totalNewsCount / newsPerPage);
+        if (page < 1) page = 1;
+        if (page > totalPages && totalPages > 0) page = totalPages;
+
+        currentPage = page;
+        const container = document.getElementById('news-container');
+        
+        if (totalNewsCount === 0) {
+            container.innerHTML = '<p class="text-center">Obecnie brak nowych komunikatów.</p>';
+            renderPaginationControls();
+            return;
+        }
+
+        container.innerHTML = visibleNews.map(item => {
+            let dateObj = new Date(item.date);
+            if (!item.date.includes('T') && item.id > 10000) {
+                let idDate = new Date(item.id);
+                if (!isNaN(idDate.getTime())) {
+                    if (idDate.getFullYear() === dateObj.getFullYear() && 
+                        idDate.getMonth() === dateObj.getMonth() && 
+                        idDate.getDate() === dateObj.getDate()) {
+                        dateObj = idDate;
+                    }
                 }
             }
-        }
-        
-        const dateStr = dateObj.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            const dateStr = dateObj.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
 
-        return `
-        <div class="news-item">
-            <h3 class="news-title">${item.title}</h3>
-            <div class="news-meta">
-                <span class="news-date">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    ${dateStr}
-                </span>
+            return `
+            <div class="news-item reveal reveal-up">
+                <h3 class="news-title">${escapeHTML(item.title)}</h3>
+                <div class="news-meta">
+                    <span class="news-date">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        ${dateStr}
+                    </span>
+                </div>
+                <div class="news-content-text">${item.content}</div>
             </div>
-            <div class="news-content-text">${item.content}</div>
-        </div>
-        `;
-    }).join('');
+            `;
+        }).join('');
 
-    // Append load more button if there's more to show
-    if (currentNewsIndex < allNewsClient.length) {
-        loadMoreBtn = document.createElement('button');
-        loadMoreBtn.id = 'load-more-news-btn';
-        loadMoreBtn.className = 'btn-primary';
-        loadMoreBtn.style.display = 'block';
-        loadMoreBtn.style.margin = '30px auto 0';
-        loadMoreBtn.style.padding = '12px 30px';
-        loadMoreBtn.textContent = 'Pokaż wcześniejsze';
+        renderPaginationControls();
+        if (window.observeNewElements) window.observeNewElements();
         
-        loadMoreBtn.addEventListener('click', () => {
-            currentNewsIndex += 3;
-            renderNewsClient(container);
-        });
+        // Update URL without reload
+        if (!isInitial) {
+            const url = new URL(window.location);
+            if (page === 1) {
+                url.searchParams.delete('p');
+            } else {
+                url.searchParams.set('p', page);
+            }
+            window.history.pushState({}, '', url);
 
-        container.after(loadMoreBtn);
+            // Smooth scroll to news top
+            requestAnimationFrame(() => {
+                if (window.scrollY > container.offsetTop) {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        }
+    } catch (error) {
+        console.error("Error fetching news page:", error);
     }
 }
+
+function renderPaginationControls() {
+    const totalPages = Math.ceil(totalNewsCount / newsPerPage);
+    let paginationContainer = document.getElementById('news-pagination');
+    
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'news-pagination';
+        paginationContainer.className = 'pagination-container';
+        document.getElementById('news-container').after(paginationContainer);
+    }
+
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+    }
+
+    let html = `
+        <div class="pagination-controls">
+            <button class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="window.renderNewsPage(${currentPage - 1})" aria-label="Poprzednia strona">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+    `;
+
+    // Page numbers with stable range logic
+    const range = 1; 
+    for (let i = 1; i <= totalPages; i++) {
+        // Show first, last, and range around current
+        if (i === 1 || i === totalPages || (i >= currentPage - range && i <= currentPage + range)) {
+            html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="window.renderNewsPage(${i})">${i}</button>`;
+        } 
+        // Show ellipsis if there is a gap of more than 1
+        else if (i === currentPage - range - 1 || i === currentPage + range + 1) {
+            // If the gap is exactly 1 page (e.g. 1 ... 3), we could just show the page, 
+            // but the current range logic with i === 1 and range=1 handles most cases.
+            html += `<span class="pagination-ellipsis">...</span>`;
+        }
+    }
+
+    html += `
+            <button class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="window.renderNewsPage(${currentPage + 1})" aria-label="Następna strona">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+        </div>
+    `;
+
+    paginationContainer.innerHTML = html;
+}
+
+// Handle browser back/forward buttons
+window.addEventListener('popstate', () => {
+    const params = new URLSearchParams(window.location.search);
+    const page = parseInt(params.get('p')) || 1;
+    window.renderNewsPage(page, true);
+});
+
 
 document.addEventListener('DOMContentLoaded', () => {
     // Current year in footer
@@ -223,13 +323,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch dynamic content
     fetchSchedule();
     fetchNews();
-    fetchFaqs();
-    if (document.getElementById('items-from')) {
-        fetchPricingData();
+    
+    // Lazy Load Pricing
+    const pricingSection = document.querySelector('.pricing-section') || document.getElementById('items-from');
+    if (pricingSection) {
+        const pObs = new IntersectionObserver((entries, obs) => {
+            if (entries[0].isIntersecting) {
+                fetchPricingData();
+                obs.disconnect();
+            }
+        }, { rootMargin: '200px' });
+        pObs.observe(pricingSection);
+    }
+
+    // Lazy Load FAQ
+    const faqSection = document.querySelector('.faq-section');
+    if (faqSection) {
+        const fObs = new IntersectionObserver((entries, obs) => {
+            if (entries[0].isIntersecting) {
+                fetchFaqs();
+                obs.disconnect();
+            }
+        }, { rootMargin: '200px' });
+        fObs.observe(faqSection);
     }
 
     // Update time displays every minute
-    setInterval(updateDisplays, 60000);
+    setInterval(() => {
+        requestAnimationFrame(updateDisplays);
+    }, 60000);
 
     // Navigation & Hamburger logic
     const hamburger = document.getElementById('hamburger-btn');
@@ -340,10 +462,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchPricingData() {
         try {
-            const res = await fetch('/api/pricing-data');
-            const data = await res.json();
+            const data = await fetchWithCache('/api/stops', 'mleczek_stops', 3600000);
             allStopsClient = data.stops;
-            allPricesClient = data.prices;
             populateCalculatorStops();
         } catch (e) {
             console.error("Failed to load pricing data", e);
@@ -407,11 +527,57 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function calculatePrice() {
+    let lastFetchedPrice = null;
+    let currentPriceType = localStorage.getItem('mleczek_price_type') || 'normal';
+
+    const priceToggleWrap = document.getElementById('price-toggle-wrap');
+    const toggleNormal = document.getElementById('toggle-normal');
+    const toggleReduced = document.getElementById('toggle-reduced');
+    const monthlyLabel = document.getElementById('monthly-label');
+    const priceToggle = document.querySelector('.price-toggle');
+
+    const priceInfoNotes = document.getElementById('price-info-notes');
+    const noteReduced = document.getElementById('note-reduced');
+
+    function updatePriceDisplay() {
+        if (!lastFetchedPrice) return;
+
+        // Single price is always the same
+        priceSingle.textContent = lastFetchedPrice.price_s.toFixed(2).replace('.', ',') + ' zł';
+
+        if (currentPriceType === 'reduced') {
+            priceMonthly.textContent = (lastFetchedPrice.price_md || 0).toFixed(2).replace('.', ',') + ' zł';
+            monthlyLabel.textContent = "Miesięczny Ulgowy";
+            if (toggleNormal) toggleNormal.classList.remove('active');
+            if (toggleReduced) toggleReduced.classList.add('active');
+            if (priceToggle) priceToggle.setAttribute('data-active', 'reduced');
+            if (noteReduced) noteReduced.classList.remove('hidden');
+        } else {
+            priceMonthly.textContent = (lastFetchedPrice.price_m || 0).toFixed(2).replace('.', ',') + ' zł';
+            monthlyLabel.textContent = "Miesięczny Normalny";
+            if (toggleNormal) toggleNormal.classList.add('active');
+            if (toggleReduced) toggleReduced.classList.remove('active');
+            if (priceToggle) priceToggle.setAttribute('data-active', 'normal');
+            if (noteReduced) noteReduced.classList.add('hidden');
+        }
+    }
+
+    [toggleNormal, toggleReduced].forEach(btn => {
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            currentPriceType = btn.id === 'toggle-normal' ? 'normal' : 'reduced';
+            localStorage.setItem('mleczek_price_type', currentPriceType);
+            updatePriceDisplay();
+        });
+    });
+
+    async function calculatePrice() {
         if (!calcFrom.value || !calcTo.value) return;
 
         if (calcFrom.value === calcTo.value) {
-            calcResults.classList.add('hidden');
+            if (calcResults) calcResults.classList.add('hidden');
+            if (priceToggleWrap) priceToggleWrap.classList.add('hidden');
+            if (priceInfoNotes) priceInfoNotes.classList.add('hidden');
             calcWarning.textContent = "Wybierz różne przystanki.";
             calcWarning.classList.remove('hidden');
             return;
@@ -419,26 +585,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const id1 = parseInt(calcFrom.value);
         const id2 = parseInt(calcTo.value);
-        const stop1 = Math.min(id1, id2);
-        const stop2 = Math.max(id1, id2);
 
-        const price = allPricesClient.find(p => p.stop1_id === stop1 && p.stop2_id === stop2);
+        try {
+            const res = await fetch(`/api/price?stop1=${id1}&stop2=${id2}`);
+            const price = await res.json();
 
-        if (price) {
-            priceSingle.textContent = price.price_s.toFixed(2).replace('.', ',') + ' zł';
-            priceMonthly.textContent = (price.price_m || 0).toFixed(2).replace('.', ',') + ' zł';
-            
-            const discountSpan = document.getElementById('price-monthly-discount');
-            if (discountSpan) {
-                discountSpan.textContent = (price.price_md || 0).toFixed(2).replace('.', ',') + ' zł';
+            if (price) {
+                lastFetchedPrice = price;
+                updatePriceDisplay();
+                
+                calcWarning.classList.add('hidden');
+                if (priceToggleWrap) priceToggleWrap.classList.remove('hidden');
+                if (calcResults) calcResults.classList.remove('hidden');
+                if (priceInfoNotes) priceInfoNotes.classList.remove('hidden');
+                
+                // Re-trigger reveal animations for new elements
+                if (window.observeNewElements) window.observeNewElements();
+            } else {
+                lastFetchedPrice = null;
+                if (calcResults) calcResults.classList.add('hidden');
+                if (priceToggleWrap) priceToggleWrap.classList.add('hidden');
+                if (priceInfoNotes) priceInfoNotes.classList.add('hidden');
+                calcWarning.innerHTML = "Ta relacja nie została uzupełniona. Skontaktuj się z nami <a href='/kontakt.html' style='color: inherit; text-decoration: underline;'>tutaj</a>.";
+                calcWarning.classList.remove('hidden');
             }
-            
-            calcWarning.classList.add('hidden');
-            calcResults.classList.remove('hidden');
-        } else {
-            calcResults.classList.add('hidden');
-            calcWarning.innerHTML = "Ta relacja nie została uzupełniona. Skontaktuj się z nami <a href='/kontakt.html' style='color: inherit; text-decoration: underline;'>tutaj</a>.";
-            calcWarning.classList.remove('hidden');
+        } catch (e) {
+            console.error("Failed to fetch price", e);
         }
     }
 
@@ -450,13 +622,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Navbar Scroll Logic
     const mainNav = document.getElementById('main-nav');
     if (mainNav && mainNav.classList.contains('navbar-home')) {
+        let lastKnownScrollPosition = 0;
+        let ticking = false;
+
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 150) {
-                mainNav.classList.add('navbar-scrolled');
-                mainNav.classList.remove('navbar-home');
-            } else {
-                mainNav.classList.add('navbar-home');
-                mainNav.classList.remove('navbar-scrolled');
+            lastKnownScrollPosition = window.scrollY;
+
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    if (lastKnownScrollPosition > 150) {
+                        mainNav.classList.add('navbar-scrolled');
+                        mainNav.classList.remove('navbar-home');
+                    } else {
+                        mainNav.classList.add('navbar-home');
+                        mainNav.classList.remove('navbar-scrolled');
+                    }
+                    ticking = false;
+                });
+
+                ticking = true;
             }
         });
     }
@@ -477,8 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchFaqs() {
         try {
-            const res = await fetch('/api/faq');
-            const data = await res.json();
+            const data = await fetchWithCache('/api/faq', 'mleczek_faq', 86400000);
             renderFaqs(data);
         } catch (e) {
             console.error("Error fetching FAQs:", e);
@@ -496,10 +679,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        container.innerHTML = faqs.map(faq => `
-            <details class="faq-item">
+        container.innerHTML = faqs.map((faq, index) => `
+            <details class="faq-item reveal reveal-up" style="transition-delay: ${index * 0.1}s">
                 <summary>
-                    <h3>${faq.question}</h3>
+                    <h3>${escapeHTML(faq.question)}</h3>
                     <div class="faq-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
@@ -509,6 +692,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </details>
         `).join('');
+
+        if (window.observeNewElements) window.observeNewElements();
 
         // Smooth Accordion Animation Logic
         const faqItems = container.querySelectorAll('.faq-item');
@@ -533,36 +718,104 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         function openItem(el, content) {
-            el.style.height = el.offsetHeight + 'px';
-            el.open = true;
             const startHeight = el.offsetHeight;
-            const endHeight = startHeight + content.offsetHeight;
+            el.open = true;
+            const contentHeight = content.offsetHeight;
+            const endHeight = startHeight + contentHeight;
 
-            el.animate([
-                { height: startHeight + 'px' },
-                { height: endHeight + 'px' }
-            ], {
-                duration: 300,
-                easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
-            }).onfinish = () => el.style.height = 'auto';
+            el.style.height = startHeight + 'px';
+            
+            requestAnimationFrame(() => {
+                el.animate([
+                    { height: startHeight + 'px' },
+                    { height: endHeight + 'px' }
+                ], {
+                    duration: 300,
+                    easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                }).onfinish = () => el.style.height = 'auto';
+            });
         }
 
         function closeItem(el, content) {
             const startHeight = el.offsetHeight;
-            const endHeight = startHeight - content.offsetHeight;
+            const contentHeight = content.offsetHeight;
+            const endHeight = startHeight - contentHeight;
 
-            const anim = el.animate([
-                { height: startHeight + 'px' },
-                { height: endHeight + 'px' }
-            ], {
-                duration: 300,
-                easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+            el.style.height = startHeight + 'px';
+
+            requestAnimationFrame(() => {
+                const anim = el.animate([
+                    { height: startHeight + 'px' },
+                    { height: endHeight + 'px' }
+                ], {
+                    duration: 300,
+                    easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                });
+
+                anim.onfinish = () => {
+                    el.open = false;
+                    el.style.height = 'auto';
+                };
             });
-
-            anim.onfinish = () => {
-                el.open = false;
-                el.style.height = 'auto';
-            };
         }
     }
+
+    // --- Animation Logic ---
+
+    // Intersection Observer for Reveal Animations
+    const revealCallback = (entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('reveal-visible');
+            }
+        });
+    };
+
+    const revealObserver = new IntersectionObserver(revealCallback, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    window.observeNewElements = () => {
+        const revealElements = document.querySelectorAll('.reveal:not(.reveal-visible)');
+        revealElements.forEach(el => revealObserver.observe(el));
+    };
+
+    // Initial run
+    window.observeNewElements();
 });
+
+// --- Cookie Banner Logic ---
+function initCookieBanner() {
+    if (localStorage.getItem('cookies-accepted')) return;
+
+    const banner = document.createElement('div');
+    banner.className = 'cookie-banner';
+    banner.id = 'cookie-banner';
+    banner.innerHTML = `
+        <h4>Pliki cookies</h4>
+        <p>Nasza witryna korzysta z plików cookies w celu poprawy jakości obsługi oraz do celów analitycznych (Google Analytics). Szczegóły znajdziesz w naszej <a href="/prywatnosc.html">Polityce Prywatności</a>.</p>
+        <div class="cookie-btns">
+            <button class="btn-accept" id="cookie-accept">Ok, Akceptuję</button>
+        </div>
+    `;
+    document.body.appendChild(banner);
+
+    // Trigger animation
+    setTimeout(() => {
+        banner.classList.add('active');
+    }, 1000);
+
+    document.getElementById('cookie-accept').addEventListener('click', () => {
+        localStorage.setItem('cookies-accepted', 'true');
+        banner.classList.remove('active');
+        setTimeout(() => banner.remove(), 500);
+    });
+}
+
+// Start cookie logic when ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCookieBanner);
+} else {
+    initCookieBanner();
+}

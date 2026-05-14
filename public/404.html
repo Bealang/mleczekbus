@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Nie odnaleziono strony | Mleczekbus</title>
+    <meta name="description" content="Ups! Strona, której szukasz, odjechała w innym kierunku. Wróć na stronę główną Mleczekbus.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-transition-overlay" id="page-overlay"></div>
+    <main class="error-page">
+        <!-- Geometric Route Lines Background -->
+        <div class="route-background">
+            <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" class="tangled-route">
+                <!-- Abstract tangled lines -->
+                <path d="M-100,500 L200,500 L250,450 L350,550 L400,500 L600,500 L650,550 L750,450 L800,500 L1100,500" class="route-line navy-line" />
+                <path d="M500,-100 L500,200 L450,250 L550,350 L500,400 L500,600 L550,650 L450,750 L500,800 L500,1100" class="route-line yellow-line" />
+                
+                <!-- The "Knot" / Broken part in the middle -->
+                <circle cx="500" cy="500" r="150" class="route-knot-glow" />
+                <path d="M400,400 C450,350 550,650 600,600" class="route-line yellow-line knot-path" />
+                <path d="M400,600 C450,650 550,350 600,400" class="route-line navy-line knot-path" />
+            </svg>
+        </div>
+
+        <div class="error-content reveal reveal-scale">
+            <!-- Minimalist Outline Bus -->
+            <div class="error-image">
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="minimal-bus">
+                    <rect x="2" y="6" width="20" height="12" rx="1" stroke="var(--primary-color)" stroke-width="1"/>
+                    <rect x="4" y="8" width="16" height="5" rx="0.5" stroke="var(--primary-color)" stroke-width="1"/>
+                    <circle cx="7" cy="18" r="1.5" stroke="var(--primary-color)" stroke-width="1"/>
+                    <circle cx="17" cy="18" r="1.5" stroke="var(--primary-color)" stroke-width="1"/>
+                    <path d="M10 18H14" stroke="var(--primary-color)" stroke-width="1"/>
+                </svg>
+            </div>
+            
+            <div class="error-code">404</div>
+            <h1 class="error-title">Ups! Ten przystanek nie istnieje</h1>
+            <p class="error-message">
+                Wygląda na to, że Twój autobus właśnie odjechał... w zupełnie innym kierunku niż zamierzałeś. 
+                Spokojnie, zawsze możesz wrócić do bazy i sprawdzić aktualny rozkład!
+            </p>
+            
+            <div class="error-actions">
+                <a href="index.html" class="btn-primary">Wróć na stronę główną</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Intersection Observer for Reveal
+            const revealCallback = (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('reveal-visible');
+                    }
+                });
+            };
+
+            const revealObserver = new IntersectionObserver(revealCallback, {
+                threshold: 0.1
+            });
+
+            document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        });
+    </script>
+</body>
+</html>
