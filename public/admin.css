@@ -928,7 +928,7 @@ h3 {
     padding: 16px 24px;
     background: rgba(11, 31, 56, 0.85);
     color: white;
-    
+
     border-left: 5px solid var(--accent-color);
     display: flex;
     align-items: center;
@@ -1067,4 +1067,110 @@ h3 {
 .stop-name {
     font-weight: 600;
     color: var(--admin-primary);
+}
+
+/* --- Modal Styles --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(5, 11, 20, 0.4);
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 0;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid var(--admin-border);
+    border-radius: 0;
+    /* Strict 0 radius */
+}
+
+.modal.active .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    padding: 24px 30px;
+    border-bottom: 1px solid var(--admin-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.modal-body {
+    padding: 30px;
+}
+
+.modal-footer {
+    padding: 20px 30px;
+    border-top: 1px solid var(--admin-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: #f8fafc;
+}
+
+.close-modal-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.75rem;
+    cursor: pointer;
+    color: #94a3b8;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.close-modal-btn:hover {
+    color: var(--admin-primary);
+}
+
+/* Ensure global boxes have 0 radius */
+.admin-container>div,
+.tab-content>div,
+.login-card,
+.form-group input,
+.form-group select,
+.form-group textarea,
+.btn-primary,
+.btn-danger,
+.btn-outline,
+.news-list-item,
+.schedule-toolbar,
+.schedule-editor-area,
+.schedule-row,
+.schedule-row::before,
+.schedule-row input[type="time"] {
+    border-radius: 0 !important;
+}
+
+/* KEEP radius for tags as requested */
+.variant-tag span {
+    border-radius: 50px !important;
 }

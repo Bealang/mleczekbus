@@ -155,8 +155,9 @@
             <div
                 style="background: white; padding: 20px; border-radius: var(--radius-box); border: 1px solid var(--admin-border); margin-bottom: 30px;">
                 <h3>Zdjęcie rozkładu</h3>
-                <p style="margin-bottom: 15px; color: var(--text-secondary);">Wybierz nową grafikę rozkładu. 
-                    <strong>Wskazówka:</strong> Użyj formatu <strong>WebP</strong> lub skompresuj plik PNG, aby przyspieszyć ładowanie strony na telefonach.
+                <p style="margin-bottom: 15px; color: var(--text-secondary);">Wybierz nową grafikę rozkładu.
+                    <strong>Wskazówka:</strong> Użyj formatu <strong>WebP</strong> lub skompresuj plik PNG, aby
+                    przyspieszyć ładowanie strony na telefonach.
                 </p>
                 <form id="upload-form">
                     <div class="form-group" style="margin-bottom: 15px;">
@@ -365,6 +366,42 @@
 
 
 
+    </div>
+
+    <!-- Modal dla dodawania kursu -->
+    <div id="add-course-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Dodaj Nowy Kurs</h3>
+                <button type="button" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Godzina Odjazdu</label>
+                    <input type="time" id="new-course-time" value="12:00" required>
+                </div>
+                <div class="form-group">
+                    <label>Warianty Kursu</label>
+                    <div class="schedule-tags-wrap" style="background: transparent; border: none; padding: 0;">
+                        <label class="variant-tag tag-s">
+                            <input type="checkbox" id="new-course-s">
+                            <span>Szkolny (S)</span>
+                        </label>
+                        <label class="variant-tag tag-rd">
+                            <input type="checkbox" id="new-course-rd">
+                            <span>Rudnik (RD)</span>
+                        </label>
+                        <label class="variant-tag tag-h">
+                            <input type="checkbox" id="new-course-h">
+                            <span>Harbutowice (H)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-primary" id="confirm-add-course">Dodaj Kurs</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>

@@ -240,20 +240,26 @@ window.renderNewsPage = async (page, isInitial = false) => {
         
         // Update URL without reload
         if (!isInitial) {
-            const url = new URL(window.location);
+            const url = new URL(window.location.href);
             if (page === 1) {
                 url.searchParams.delete('p');
             } else {
                 url.searchParams.set('p', page);
             }
-            window.history.pushState({}, '', url);
+            url.hash = 'aktualnosci';
+            window.history.pushState({}, '', url.toString());
 
-            // Smooth scroll to news top
-            requestAnimationFrame(() => {
-                if (window.scrollY > container.offsetTop) {
-                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
+            // Smooth scroll to news section top
+            const newsSection = document.getElementById('aktualnosci');
+            if (newsSection) {
+                const navHeight = 100; // Navbar height + buffer
+                const targetPosition = newsSection.getBoundingClientRect().top + window.pageYOffset - navHeight;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
         }
     } catch (error) {
         console.error("Error fetching news page:", error);
@@ -375,6 +381,26 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // Universal Smooth Scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href === '#') return;
+            
+            const target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                const navHeight = 100;
+                const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
 
     // Modal logic
     const modal = document.getElementById('schedule-modal');

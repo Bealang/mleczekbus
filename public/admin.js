@@ -282,9 +282,43 @@ document.addEventListener('DOMContentLoaded', () => {
         renderScheduleTable(city, dayType);
     });
 
-    btnAddRow.addEventListener('click', () => {
-        containerSchedule.appendChild(createScheduleRow("12:00", []));
+    // --- Modal Logic ---
+    const addCourseModal = document.getElementById('add-course-modal');
+    const closeBtns = document.querySelectorAll('.close-modal-btn');
+    const confirmAddBtn = document.getElementById('confirm-add-course');
+
+    function openModal() {
+        addCourseModal.classList.add('active');
+        document.getElementById('new-course-time').value = "12:00";
+        document.getElementById('new-course-s').checked = false;
+        document.getElementById('new-course-rd').checked = false;
+        document.getElementById('new-course-h').checked = false;
+    }
+
+    function closeModal() {
+        addCourseModal.classList.remove('active');
+    }
+
+    closeBtns.forEach(btn => btn.addEventListener('click', closeModal));
+
+    // Zamknij po kliknięciu poza modalem
+    window.addEventListener('click', (e) => {
+        if (e.target === addCourseModal) closeModal();
+    });
+
+    btnAddRow.addEventListener('click', openModal);
+
+    confirmAddBtn.addEventListener('click', () => {
+        const time = document.getElementById('new-course-time').value;
+        const notes = [];
+        if (document.getElementById('new-course-s').checked) notes.push('S');
+        if (document.getElementById('new-course-rd').checked) notes.push('RD');
+        if (document.getElementById('new-course-h').checked) notes.push('H');
+
+        containerSchedule.appendChild(createScheduleRow(time, notes));
         sortScheduleDOM();
+        closeModal();
+        showStatus('Kurs został dodany do listy (nie zapomnij zapisać zmian!).', 'success');
     });
 
     btnSaveSchedule.addEventListener('click', async () => {
@@ -677,18 +711,29 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('price-md').value = '';
 
         if (!id1) {
-            // Reset colors if A is not selected
-            Array.from(selectB.options).forEach(opt => opt.style.color = '');
+            // Reset colors and state if A is not selected
+            Array.from(selectB.options).forEach(opt => {
+                opt.style.color = '';
+                opt.disabled = false;
+                opt.style.cursor = '';
+                opt.text = opt.text.replace(' (brak ceny)', '');
+            });
             return;
         }
 
         // Color options in B based on existing prices with A
         Array.from(selectB.options).forEach(opt => {
             const bId = parseInt(opt.value);
-            if (!bId || bId === id1) {
-                opt.style.color = '';
+            if (!bId) return;
+
+            if (bId === id1) {
+                opt.disabled = true;
+                opt.style.color = '#ccc';
+                opt.style.cursor = 'not-allowed';
                 return;
             }
+            opt.disabled = false;
+            opt.style.cursor = '';
 
             const stop1 = Math.min(id1, bId);
             const stop2 = Math.max(id1, bId);
@@ -702,7 +747,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        if (!id2 || id1 === id2) return;
+        if (id2 && id1 === id2) {
+            showStatus('Przystanek A i B nie mogą być takie same!', 'error');
+            selectB.value = "";
+            return;
+        }
+
+        if (!id2) return;
 
         const stop1 = Math.min(id1, id2);
         const stop2 = Math.max(id1, id2);
@@ -737,6 +788,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!stop1_id || !stop2_id || isNaN(price_s)) {
             showStatus('Wypełnij przynajmniej cenę jednorazową.', 'error');
+            return;
+        }
+
+        if (stop1_id === stop2_id) {
+            showStatus('Błąd: Przystanek A i B są identyczne.', 'error');
             return;
         }
 
